@@ -1,0 +1,1 @@
+1. Use INT 0x15, EAX = 0xE820 in x86_64_real.s to build memory map.

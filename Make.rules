@@ -1,0 +1,28 @@
+# === DEFAULT MAKE RULES ===
+# 
+# Must be defined:
+# 	- OBJS		=> *.bin dependencies
+# 	- ENTRY		=> Entry point for the linker [Make.defaults]
+#
+# Defined by Make.defaults:
+#	- CC
+#	- CFLAGS
+#	- LD
+#	- LFLAGS
+#	- AS
+#	- AFLAGS
+#	- ARCH
+
+include ./Make.defaults
+
+%.o: %.c
+	$(CC) $(CFLAGS) -o $(BUILD)/$(notdir $@)
+
+%.o: %.$(ASEXT)
+
+# *.bin files serve as Kernel Modules, and shouldn't contain anything besides
+# the target file's basename.
+%.bin: $(OBJS)
+	$(LD) $(LFLAGS) -o $(BUILD)/$@
+
+.DEFAULT_GOAL = all

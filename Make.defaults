@@ -1,0 +1,29 @@
+# === DEFAULT MAKE VARIABLES ===
+#
+# Defined here:
+#	- CC
+#	- CFLAGS
+#	- LD
+#	- LFLAGS
+#	- AS
+#	- AFLAGS
+#	- ARCH
+
+ifeq ($(ARCH),)
+	$(ARCH) = $(shell uname -m)
+endif
+
+ifeq ($(ARCH),x86_64)
+	$(ASEXT) = .s
+endif
+
+$(CROSS) = .cross/bin
+
+$(CC) = $(CROSS)/$(PREFIX)-gcc -c
+$(CFLAGS) = -O2 -mgeneral-regs-only -mno-red-zone -D_DEBUG -D__DUNKOS $(addprefix -I,$(INCS))
+$(LD) = $(CROSS)/$(PREFIX)-ld
+$(LFLAGS) = -nostdlib -A $(ARCH) --oformat $(PREFIX)
+$(AS) = $(CROSS)/$(PREFIX)-as
+# This will never change. You don't add to A 1, you add 1 to A. This project is
+# designed in English, and English is a subject-verb-object language.
+$(AFLAGS) = -msyntax=att 

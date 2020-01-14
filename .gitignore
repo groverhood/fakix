@@ -1,0 +1,6 @@
+cross
+
+.vscode
+
+*.o
+*.bin
