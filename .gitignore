@@ -4,5 +4,6 @@ cross
 .vscode
 
 *.o
+*.BIOS
 *.bin
 *.generated.*
