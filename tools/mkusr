@@ -32,7 +32,6 @@ sub diradd
 # image.
 sub ddir
 {
-
     my $root = $_[0];
     my $repr = (defined $_[1]) ? $_[1] : "/";
     my $parent = (defined $_[2]) ? $_[2] : ROOT_SECTOR;
