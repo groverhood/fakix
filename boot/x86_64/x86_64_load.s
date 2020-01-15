@@ -8,17 +8,11 @@
 #
 
 .code16
-
 .section .load
 
-# We will be reading single sectors into this until we find the Fakix image
-# header.
-.extern fakix_image_header
-# We will read the boot module into this
-.extern fakix_boot_begin
+.include "load.h"
 
 .globl load_entry
-.type load_entry, @function
 load_entry:
     cli
 
@@ -29,7 +23,7 @@ load_entry:
     movw %ax, %ds
     movw %ax, %ss
     movw %ax, %es
-    movl $fakix_real_stack, %esp
+    movl $FAKIX_REAL_MODE_STACK, %esp
 
     sti
 
@@ -44,7 +38,7 @@ load_entry:
     
     call check_hdr
     cmpw $8, %ax
-    je load_fakix
+    je load_boot
 
     incb %dl
     jne .check_device
@@ -52,17 +46,17 @@ load_entry:
     hlt
 
 # Load the Boot Module into memory.
-load_fakix:
+load_boot:
     # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
     # addressing.
     movb $0x42, %ah
     # Read from the first sector
-    movl $fakix_image_header, %ebx
+    movl $FAKIX_IMAGE_HEADER, %ebx
     movl 0x44(%ebx), %ecx 
     pushl %ecx # LBA [32:63]
     movl 0x40(%ebx), %ecx
     pushl %ecx # LBA [0:31]
-    pushw $fakix_boot
+    pushw $FAKIX_BOOT
     pushw $0
     movw 0x48(%ebx), %cx
     pushw %cx
@@ -72,7 +66,7 @@ load_fakix:
     jc .read_failure
     addl $0x10, %esp
 
-    jmp fakix_boot_begin
+    jmp FAKIX_BOOT
 
 .type check_hdr, @function
 check_hdr:
@@ -81,7 +75,7 @@ check_hdr:
     xorw %bx, %bx
 
 .check_hdr_loop:
-    movw %bx(fakix_image_header), %ax
+    movw FAKIX_IMAGE_HEADER(%bx), %ax
     cmpw %bx(.fakix_magik), %ax
     jne .end_loop
 
@@ -104,7 +98,7 @@ read_sector:
     # Read from the first sector
     pushl $0 # LBA [32:63]
     pushl $0 # LBA [0:31]
-    pushw $fakix_image_header
+    pushw $FAKIX_IMAGE_HEADER
     pushw $0
     pushw $1
     pushw $0x10
@@ -121,5 +115,5 @@ read_sector:
     .string "Fakix!"
 
 bootloader_end:
-.org 510 - bootloader_end
+.org FAKIX_LOADER_SIZE - 2
 .word 0xAA55

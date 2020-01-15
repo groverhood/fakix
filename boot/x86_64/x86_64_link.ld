@@ -1,29 +1,35 @@
 
-INCLUDE x86_64_load.h
+/* Check this header file for informative comments. */
+#include <load.h>
 
 SECTIONS
 {
-    /* Where we load the rest of the Boot Module. 9K (0x2400) */
-    fakix_boot = 0x1000;
+    fakix_boot = FAKIX_BOOT;
 
-    fakix_real_stack = 0x7000;
-    . = 0x7C00;
+    fakix_real_stack = FAKIX_REAL_MODE_STACK;
 
+    . = FAKIX_LOADER;
     .load : {
         *(.load);
     }
 
-    /* 512 bytes (0x200) */
-    fakix_image_header = 0x8000;
+    fakix_image_header = FAKIX_IMAGE_HEADER;
 
-    /* 2.5K (0x600) */
-    fakix_memmap = 0x8200;
+    fakix_memmap = FAKIX_MEMMAP;
 
-    /* 256 bytes (0x100) */
-    fakix_rsdt = 0x8800;
+    fakix_rsdt = FAKIX_RSDT;
 
-    /* 4K (0x1000) */
-    fakix_pr_stack = 0xE000;
+    fakix_pr_stack = FAKIX_PROT_MODE_STACK;
 
-    video_mmio_bios = 0xF0000;
+    fakix_boot_pml4 = FAKIX_BOOT_PML4;
+    fakix_boot_pdp = FAKIX_BOOT_PDP;
+    fakix_boot_pgdir = FAKIX_BOOT_PGDIR;
+    fakix_boot_pgtbl = FAKIX_BOOT_PGTBL;
+
+    fakix_kern_pml4 = FAKIX_KERN_PML4;
+    fakix_kern_pdp = FAKIX_KERN_PDP;
+    fakix_kern_pgdir = FAKIX_KERN_PGDIR;
+    fakix_kern_pgtbl = FAKIX_KERN_PGTBL;
+
+    fakix_kern_start = FAKIX_KERN_START;
 }
