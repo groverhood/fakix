@@ -21,6 +21,7 @@ include ./Make.defaults
 %.o: %.$(ASEXT)
 	$(AS) $(AFLAGS) -o $@
 
+# *.generated.ld rules must be manually specified and run within the rule body
 %.generated.ld: %.ld
 	$(CPP) $(CPPFLAGS) -o $@
 
