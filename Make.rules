@@ -16,13 +16,18 @@
 include ./Make.defaults
 
 %.o: %.c
-	$(CC) $(CFLAGS) -o $(BUILD)/$(notdir $@)
+	$(CC) $(CFLAGS) -o $@
 
 %.o: %.$(ASEXT)
+	$(AS) $(AFLAGS) -o $@
+
+%.generated.ld: %.ld
+	$(CPP) $(CPPFLAGS) -o $@
 
 # *.bin files serve as Kernel Modules, and shouldn't contain anything besides
 # the target file's basename.
 %.bin: $(OBJS)
-	$(LD) $(LFLAGS) -o $(BUILD)/$@
+	$(LD) $(LFLAGS) -o $@
+
 
 .DEFAULT_GOAL = all
