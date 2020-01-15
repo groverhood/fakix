@@ -11,9 +11,6 @@
 .code16
 .section .text
 
-# Nice constants.
-#include "load.h"
-
 # Protected mode entry point.
 .extern protected_mode_entry
 
@@ -21,7 +18,6 @@
 .extern fakix_image_header
 .extern fakix_memmap
 .extern fakix_kern_start
-
 
 .globl real_mode_entry
 .type real_mode_entry, @function
@@ -50,11 +46,14 @@ real_mode_entry:
     # prepare for entering protected mode.
     call generate_mmap
     
-    # Enable the A20 line so we can load the kernel into high memory.
-    call enable_a20_line
 
     # Load the kernel into physical memory
     call load_kernel
+
+    # We will reenable interrupts after we initialize our IDT in long mode
+    cli
+
+    call enable_a20_line
 
     # Set Protection Enable bit [CR0:0]
     movl %cr0, %eax
@@ -62,6 +61,11 @@ real_mode_entry:
     movl %eax, %cr0
 
     ljmp $0x8, $protected_mode_entry
+
+/* The kernel entry point. */
+.globl fakix_kernel_entry
+fakix_kernel_entry:
+    .long 0
 
 # Load the FAKIX kernel into physical memory starting at fakix_kern_start.
 load_kernel:
@@ -85,6 +89,11 @@ load_kernel:
     int $0x13
     jc error
     addl $0x10, %esp
+
+    movl $fakix_kern_start, %ecx
+    movl 0x18(%ecx), %eax
+    movl %eax, fakix_kernel_entry
+
     ret
 
 # Generate the FAKIX memory map at fakix_memmap. This doesn't perform anything
@@ -116,11 +125,9 @@ generate_mmap:
 
 # Enable the A20 line, which will allow for addressing above 1MB.
 enable_a20_line:
-    cli
     inb $0x92, %al
     orb $2, %al
     outb %al, $0x92
-    sti
     ret
 
 # What we identify the RSDP by.

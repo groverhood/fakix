@@ -8,7 +8,6 @@
 #
 
 .section .text
-#include "load.h"
 
 .extern fakix_kern_start
 
@@ -17,7 +16,8 @@ long_mode_entry:
     # Temporary. Remove this after verying the bootloader works.
     hlt
     movq $0xFFFF800000000000, %rax
-    call *fakix_kern_start(%rax)
+    movq $fakix_kern_start, %rcx
+    call *0x18(%rax, %rcx)
 
 # In theory, this should be unreachable, as the kernel is tasked with coming to
 # terms with its own demise.

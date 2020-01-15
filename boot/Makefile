@@ -8,9 +8,13 @@ INCS = $(PWD)/inc/kernel/arch/$(ARCH)
 LOADER_SRC = $(ARCH)_load.$(ASEXT)
 SRCS = $(shell find $(shell pwd)/$(ARCH) \( -name "*.$(ASEXT)" \) -a -not -name "$(LOADER_SRC)" -a -print)
 OBJS := $(SRCS:.$(ASEXT)=.o)
-LFLAGS += -T $(ARCH)/$(ARCH)_link.generated.ld
+BOOTLINK = $(ARCH)/$(ARCH)_link.generated.ld
+LFLAGS += -T $(BOOTLINK)
 
-all: $(ARCH)/$(ARCH)_link.generated.ld boot.bin loader.bin	
+all: $(BOOTLINK) boot.bin loader.bin
+	$(OBJCOPY) loader.bin loader.BIOS
 
-loader.bin: $(ARCH)/$(LOADER_SRC:.$(ASEXT)=.o)
-	$(LD) $(LFLAGS) -o $@ $(ARCH)/$(LOADER_SRC:.$(ASEXT)=.o)
+boot.bin: LFLAGS += -e real_mode_entry
+
+loader.bin: OBJS := $(ARCH)/$(ARCH)_load.o
+loader.bin: LFLAGS += -e load_entry

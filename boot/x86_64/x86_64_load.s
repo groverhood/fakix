@@ -81,7 +81,13 @@ load_boot:
     jc .read_failure
     addl $0x10, %esp
 
-    jmp fakix_boot
+    # FAKIX modules are actually just ELF64 executables. In every ELF header,
+    # the entry address is at offset 0x18. The address is technically a quad,
+    # but really it fits within a long, so we don't need to worry about whether
+    # we truncated a 64-bit address or not.
+    movl $0x18, %eax
+    addl $fakix_boot, %eax
+    jmp *%eax
 
 .type check_hdr, @function
 check_hdr:

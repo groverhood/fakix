@@ -11,21 +11,20 @@
 .code32
 .section .text
 
-#include "load.h"
-
-.gdt:
+.globl gdt
+gdt:
 	.quad 0
-.equ .gdtcode, (. - .gdt)
+.equ gdtcode, (. - gdt)
 	.quad (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)
-.equ .gdtdata, (. - .gdt)
+.equ gdtdata, (. - gdt)
 	.quad (1 << 44) | (1 << 47) | (1 << 41)
 # We will modify this later on.
-.equ .gdttss, (. - .gdt)
+.equ gdttss, (. - gdt)
 	.quad 0
 	.quad 0
-.gdtp:
-	.word (. - .gdt - 1)
-	.quad .gdt
+gdtp:
+	.word (. - gdt - 1)
+	.quad gdt
 
 .extern fakix_pr_stack
 
@@ -52,8 +51,8 @@ protected_mode_entry:
     call enable_paging
 
     # Load the Global Descriptor Table
-    lgdt (.gdtp)
-    movl $.gdtdata, %eax
+    lgdt (gdtp)
+    movl $gdtdata, %eax
 	movw %ax, %ss
 	movw %ax, %ds
 	movw %ax, %es

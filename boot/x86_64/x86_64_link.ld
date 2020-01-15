@@ -5,11 +5,18 @@
 SECTIONS
 {
     fakix_boot = FAKIX_BOOT;
+    . = FAKIX_BOOT;
+
+    .boot : AT(FAKIX_BOOT) {
+        *(.text);
+        *(.data);
+        *(.bss);
+    }
 
     fakix_real_stack = FAKIX_REAL_MODE_STACK;
 
     . = FAKIX_LOADER;
-    .load : {
+    .load : AT(FAKIX_LOADER) {
         *(.load.load_entry);
         *(.load);
     }
@@ -33,4 +40,5 @@ SECTIONS
     fakix_kern_pgtbl = FAKIX_KERN_PGTBL;
 
     fakix_kern_start = FAKIX_KERN_START;
+
 }
