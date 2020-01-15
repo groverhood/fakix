@@ -1,12 +1,13 @@
 include ./Make.defaults
 
+define \n
 
 
-all:
-	make -C boot
-	make -C kernel
+endef
+MODULES := boot kernel
+
+all: $(MODULES)
+	$(foreach mod, $(MODULES), $(MAKE) -C $(mod)${\n})
 
 clean:
-	find kernel boot \( -name "*.o" -o -name "*.generated.*" -o -name "*.bin" \) -a -delete
-
-.DEFAULT_GOAL = all
+	find $(MODULES) \( -name "*.o" -o -name "*.generated.*" -o -name "*.bin" \) -a -delete

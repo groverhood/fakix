@@ -21,13 +21,13 @@ include $(PWD)/Make.defaults
 %.o: %.$(ASEXT)
 	$(AS) $(AFLAGS) -o $@ $<
 
-# *.generated.ld rules must be manually specified and run within the rule body
+# *.generated.ld rules must be manually specified as dependencies
 %.generated.ld: %.ld
 	$(CPP) $(CPPFLAGS) $< | grep -v '^#' > $@
 
 # *.bin files serve as Kernel Modules, and shouldn't contain anything besides
 # the target file's basename.
-%.bin: 
+%.bin:
 	$(MAKE) $(OBJS)
 	$(LD) $(LFLAGS) -o $@ $(OBJS)
 
