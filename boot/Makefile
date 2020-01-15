@@ -10,9 +10,10 @@ SRCS = $(shell find $(shell pwd)/$(ARCH) \( -name "*.$(ASEXT)" \) -a -not -name 
 OBJS := $(SRCS:.$(ASEXT)=.o)
 BOOTLINK = $(ARCH)/$(ARCH)_link.generated.ld
 LFLAGS += -T $(BOOTLINK)
+OBC = $(CROSS)/$(PREFIX)-objcopy
 
 all: $(BOOTLINK) boot.bin loader.bin
-	$(OBJCOPY) loader.bin loader.BIOS
+	$(OBC) $(OBCFLAGS) loader.bin
 
 boot.bin: LFLAGS += -e real_mode_entry
 

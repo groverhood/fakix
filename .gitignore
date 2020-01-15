@@ -1,5 +1,6 @@
 build
 cross
+root 
 
 .vscode
 
@@ -7,3 +8,4 @@ cross
 *.BIOS
 *.bin
 *.generated.*
+*.img

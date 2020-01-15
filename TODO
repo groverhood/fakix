@@ -1,4 +1,4 @@
-1. Fix possible LD bug that causes loader.bin to be generated as an empty file.
+1. Fix any bugs that pop up in the bootloader
 2. Devise a compression system for the kernel module.
 3. Write a readme.
 4. Figure out a good license.

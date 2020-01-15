@@ -18,10 +18,8 @@
 load_entry:
     cli
 
-    ljmp $0, $.dummy
-.dummy:
-
-    xorw %ax, %ax
+    ljmp $0, $1f
+1:  xorw %ax, %ax
     movw %ax, %ds
     movw %ax, %ss
     movw %ax, %es

@@ -18,7 +18,7 @@ endif
 ifeq ($(ARCH),x86_64)
   ASEXT = s
   PREFIX = $(ARCH)-elf
-  OBC_PREFIX = elf64-$(ARCH)
+  OBC_PREFIX = elf64-x86-64
 endif
 
 CROSS = $(PWD)/cross/bin
