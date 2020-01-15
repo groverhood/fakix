@@ -12,16 +12,22 @@
 .section .text
 
 # Nice constants.
-.include "load.h"
+#include "load.h"
 
 # Protected mode entry point.
 .extern protected_mode_entry
+
+.extern fakix_rsdt
+.extern fakix_image_header
+.extern fakix_memmap
+.extern fakix_kern_start
+
 
 .globl real_mode_entry
 .type real_mode_entry, @function
 real_mode_entry:
     call find_rsdp
-    testb %si, %si
+    testw %si, %si
     jne error
 
     # Validate the RSDP we found.
@@ -38,7 +44,7 @@ real_mode_entry:
     cmpw $2, 15(%di)
     jne 1f
     movl 40(%di), %eax
-1:  movl %eax, FAKIX_RSDT
+1:  movl %eax, fakix_rsdt
 
     # Scrounge as much useful BIOS information before disabling interrupts to
     # prepare for entering protected mode.
@@ -57,19 +63,21 @@ real_mode_entry:
 
     ljmp $0x8, $protected_mode_entry
 
-# Load the FAKIX kernel into physical memory starting at FAKIX_KERN_START.
+# Load the FAKIX kernel into physical memory starting at fakix_kern_start.
 load_kernel:
     # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
     # addressing.
     movb $0x42, %ah
     # Read from the first sector
-    movl $FAKIX_IMAGE_HEADER, %ebx
+    movl $fakix_image_header, %ebx
     movl 0x14(%ebx), %ecx 
     pushl %ecx # LBA [32:63]
     movl 0x10(%ebx), %ecx
     pushl %ecx # LBA [0:31]
-    pushw $FAKIX_KERN_START
-    pushw $0
+    movl $fakix_kern_start, %ecx
+    pushw %cx
+    shrl $4, %ecx
+    pushw %cx
     movw 0x18(%ebx), %cx # Number of sectors to read
     pushw %cx
     pushw $0x10
@@ -79,14 +87,15 @@ load_kernel:
     addl $0x10, %esp
     ret
 
-# Generate the FAKIX memory map at FAKIX_MEMMAP. This doesn't perform anything
+# Generate the FAKIX memory map at fakix_memmap. This doesn't perform anything
 # on the returned list. During kernel initialization, it is expected that some
 # sorting + coalescing of overlapping regions will be performed.
 generate_mmap:
-    xorw %es, %es
+    xorw %ax, %ax
+    movw %ax, %es
     xorl %ebx, %ebx
     movl $0x534D4150, %edx
-    movw $FAKIX_MEMMAP, %di
+    movw $fakix_memmap, %di
 
 .generate_mmap_loop:
     movl $0xE820, %eax
@@ -99,7 +108,7 @@ generate_mmap:
 
     jc .generate_mmap_loop_end
     addw $24, %di
-    cmpw $FAKIX_MEMMAP_SIZE, %di
+    cmpw $0x600, %di
     jb .generate_mmap_loop
 
 .generate_mmap_loop_end:
@@ -128,7 +137,8 @@ enable_a20_line:
 #
 find_rsdp:
     pushw %ax
-    movw $0xE000, %es
+    movw $0xE000, %ax
+    movw %ax, %es
     movw $0, %si
 
 .find_rsdp_loop:
@@ -147,7 +157,11 @@ find_rsdp:
     movw $0, %si
     je .find_rsdp_loop_end
     
-    incw %es
+    pushw %ax
+    movw %es, %ax
+    incw %ax
+    movw %ax, %es
+    popw %ax
     jnc .find_rsdp_loop
 
 .find_rsdp_loop_end:

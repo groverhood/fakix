@@ -13,22 +13,23 @@
 #	- AFLAGS
 #	- ARCH
 
-include ./Make.defaults
+include $(PWD)/Make.defaults
 
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@
+	$(CC) $(CFLAGS) -o $@ $<
 
 %.o: %.$(ASEXT)
-	$(AS) $(AFLAGS) -o $@
+	$(AS) $(AFLAGS) -o $@ $<
 
 # *.generated.ld rules must be manually specified and run within the rule body
 %.generated.ld: %.ld
-	$(CPP) $(CPPFLAGS) -o $@
+	$(CPP) $(CPPFLAGS) $< | grep -v '^#' > $@
 
 # *.bin files serve as Kernel Modules, and shouldn't contain anything besides
 # the target file's basename.
-%.bin: $(OBJS)
-	$(LD) $(LFLAGS) -o $@
+%.bin: 
+	$(MAKE) $(OBJS)
+	$(LD) $(LFLAGS) -o $@ $(OBJS)
 
 
 .DEFAULT_GOAL = all

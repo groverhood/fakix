@@ -10,7 +10,9 @@
 .code16
 .section .load
 
-.include "load.h"
+.extern fakix_real_stack
+.extern fakix_image_header
+.extern fakix_memmap
 
 .globl load_entry
 load_entry:
@@ -23,7 +25,7 @@ load_entry:
     movw %ax, %ds
     movw %ax, %ss
     movw %ax, %es
-    movl $FAKIX_REAL_MODE_STACK, %esp
+    movl $fakix_real_stack, %esp
 
     sti
 
@@ -34,7 +36,20 @@ load_entry:
     # is tagged by a magic constant equivalent to the qword-aligned and
     # null-terminated string "Fakix!".
 .check_device:
-    call read_sector
+    # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
+    # addressing.
+    movb $0x42, %ah
+    # Read from the first sector
+    pushl $0 # LBA [32:63]
+    pushl $0 # LBA [0:31]
+    pushw $fakix_image_header
+    pushw $0
+    pushw $1
+    pushw $0x10
+    movw %sp, %si
+    int $0x13
+    jc .read_failure
+    addl $0x10, %esp
     
     call check_hdr
     cmpw $8, %ax
@@ -51,12 +66,12 @@ load_boot:
     # addressing.
     movb $0x42, %ah
     # Read from the first sector
-    movl $FAKIX_IMAGE_HEADER, %ebx
+    movl $fakix_image_header, %ebx
     movl 0x44(%ebx), %ecx 
     pushl %ecx # LBA [32:63]
     movl 0x40(%ebx), %ecx
     pushl %ecx # LBA [0:31]
-    pushw $FAKIX_BOOT
+    pushw $fakix_boot
     pushw $0
     movw 0x48(%ebx), %cx
     pushw %cx
@@ -66,7 +81,7 @@ load_boot:
     jc .read_failure
     addl $0x10, %esp
 
-    jmp FAKIX_BOOT
+    jmp fakix_boot
 
 .type check_hdr, @function
 check_hdr:
@@ -75,9 +90,9 @@ check_hdr:
     xorw %bx, %bx
 
 .check_hdr_loop:
-    movw FAKIX_IMAGE_HEADER(%bx), %ax
-    cmpw %bx(.fakix_magik), %ax
-    jne .end_loop
+    movw fakix_image_header(%bx), %ax
+    cmpw .fakix_magik(%bx), %ax
+    jne .read_failure
 
     incw %bx
     cmpw $8, %bx
@@ -88,32 +103,11 @@ check_hdr:
     popw %bx
     ret
 
-# Read a single 512-byte block of data into fakix_image_header from the start of
-# the current hard drive.
-.type read_sector, @function
-read_sector:
-    # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
-    # addressing.
-    movb $0x42, %ah
-    # Read from the first sector
-    pushl $0 # LBA [32:63]
-    pushl $0 # LBA [0:31]
-    pushw $FAKIX_IMAGE_HEADER
-    pushw $0
-    pushw $1
-    pushw $0x10
-    movw %sp, %si
-    int $0x13
-    jc .read_failure
-    addl $0x10, %esp
-    ret
-
 .read_failure:
     hlt
 
 .fakix_magik:
     .string "Fakix!"
 
-bootloader_end:
-.org FAKIX_LOADER_SIZE - 2
+.org 510
 .word 0xAA55

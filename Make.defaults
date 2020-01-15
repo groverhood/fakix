@@ -12,21 +12,21 @@
 #	- ARCH
 
 ifeq ($(ARCH),)
-	ARCH = $(shell uname -m)
+  ARCH = $(shell uname -m)
 endif
 
 ifeq ($(ARCH),x86_64)
-	ASEXT = .s
-	PREFIX = $(ARCH)-elf
+  ASEXT = s
+  PREFIX = $(ARCH)-elf
 endif
 
-CROSS = cross/bin
+CROSS = $(PWD)/cross/bin
 
 CC = $(CROSS)/$(PREFIX)-gcc -c
-CFLAGS = -O2 -mgeneral-regs-only -mno-red-zone -D_DEBUG -D__DUNKOS $(addprefix -I,$(INCS))
+CFLAGS = -O2 -mgeneral-regs-only -mno-red-zone -D__FAKIX__ -DARCH_$(ARCH) $(addprefix -I,$(INCS))
 LD = $(CROSS)/$(PREFIX)-ld
-LFLAGS = -nostdlib -A $(ARCH) --oformat $(PREFIX)
-AS = $(CROSS)/$(PREFIX)-as
-AFLAGS =
+LFLAGS = -nostdlib -A $(ARCH) --oformat binary
+AS = $(CC)
+AFLAGS = $(addprefix -I,$(INCS))
 CPP = $(CROSS)/$(PREFIX)-cpp
 CPPFLAGS = $(addprefix -I,$(INCS)) -x c

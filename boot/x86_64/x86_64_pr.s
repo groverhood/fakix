@@ -11,21 +11,33 @@
 .code32
 .section .text
 
-.include "load.h"
+#include "load.h"
 
 .gdt:
 	.quad 0
-.equ gdt64code, (. - gdt64)
+.equ .gdtcode, (. - .gdt)
 	.quad (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)
-.equ gdt64data, (. - gdt64)
+.equ .gdtdata, (. - .gdt)
 	.quad (1 << 44) | (1 << 47) | (1 << 41)
 # We will modify this later on.
-.equ gdt64tss, (. - gdt64)
+.equ .gdttss, (. - .gdt)
 	.quad 0
 	.quad 0
 .gdtp:
-	.word (. - gdt64 - 1)
-	.quad gdt64
+	.word (. - .gdt - 1)
+	.quad .gdt
+
+.extern fakix_pr_stack
+
+.extern fakix_boot_pml4
+.extern fakix_boot_pdp
+.extern fakix_boot_pgdir
+.extern fakix_boot_pgtbl
+
+.extern fakix_kern_pml4
+.extern fakix_kern_pdp
+.extern fakix_kern_pgdir
+.extern fakix_kern_pgtbl
 
 # Long mode entry point.
 .extern long_mode_entry
@@ -41,7 +53,7 @@ protected_mode_entry:
 
     # Load the Global Descriptor Table
     lgdt (.gdtp)
-    movl $gdt64data, %eax
+    movl $.gdtdata, %eax
 	movw %ax, %ss
 	movw %ax, %ds
 	movw %ax, %es
@@ -68,7 +80,7 @@ enable_paging:
 	movl %eax, %cr0
 
     # Set the boot page table as our active page table
-    movl $FAKIX_BOOT_PML4, %eax
+    movl $fakix_boot_pml4, %eax
     movl %eax, %cr3
 
     # Enable 48 bit physical addresses (PAE bit CR4:5)
@@ -92,24 +104,24 @@ enable_paging:
     ret
 
 setup_boot_page_table:
-    movl $FAKIX_BOOT_PDP, %eax
+    movl $fakix_boot_pdp, %eax
     orl $0x03, %eax
-    movl %eax, FAKIX_BOOT_PML4
+    movl %eax, fakix_boot_pml4
 
-    movl $FAKIX_BOOT_PGDIR, %eax
+    movl $fakix_boot_pgdir, %eax
     orl $0x03, %eax
-    movl %eax, FAKIX_BOOT_PDP
+    movl %eax, fakix_boot_pdp
 
-    movl $FAKIX_BOOT_PGTBL, %eax
+    movl $fakix_boot_pgtbl, %eax
     orl $0x83, %eax
-    movl %eax, FAKIX_BOOT_PGDIR
+    movl %eax, fakix_boot_pgdir
 
     xorl %ecx, %ecx
     .map_boot_pagetable:
         movl %ecx, %eax
 		shll $11, %eax
 		orl $0x83, %eax
-		movl %eax, FAKIX_BOOT_PGTBL(, %ecx, 8)
+		movl %eax, fakix_boot_pgtbl(, %ecx, 8)
 		addl $1, %ecx
 		cmpl $0x200, %ecx
 		jl .map_boot_pagetable
@@ -117,25 +129,29 @@ setup_boot_page_table:
     ret
 
 setup_kern_page_table:
-    # Shallow copy the kernel page table.
-    movl $FAKIX_KERN_PDP, %eax
+    movl $fakix_kern_pdp, %eax
     orl $0x03, %eax
-    movl %eax, 0x800(FAKIX_BOOT_PML4)
+    movl %eax, (0x800 + fakix_kern_pml4)
 
-    movl $FAKIX_KERN_PGDIR, %eax
+    # Shallow copy the kernel page table into the boot page table.
+    movl $fakix_kern_pdp, %eax
     orl $0x03, %eax
-    movl %eax, FAKIX_KERN_PDP
+    movl %eax, (0x800 + fakix_boot_pml4)
 
-    movl $FAKIX_KERN_PGTBL, %eax
+    movl $fakix_kern_pgdir, %eax
+    orl $0x03, %eax
+    movl %eax, fakix_kern_pdp
+
+    movl $fakix_kern_pgtbl, %eax
     orl $0x83, %eax
-    movl %eax, FAKIX_KERN_PGDIR
+    movl %eax, fakix_kern_pgdir
 
     xorl %ecx, %ecx
     .map_kern_pagetable:
         movl %ecx, %eax
 		shll $11, %eax
 		orl $0x83, %eax
-		movl %eax, FAKIX_KERN_PGTBL(, %ecx, 8)
+		movl %eax, fakix_kern_pgtbl(, %ecx, 8)
 		addl $1, %ecx
 		cmpl $0x200, %ecx
 		jl .map_kern_pagetable

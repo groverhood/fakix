@@ -10,6 +10,7 @@ SECTIONS
 
     . = FAKIX_LOADER;
     .load : {
+        *(.load.load_entry);
         *(.load);
     }
 
