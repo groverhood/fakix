@@ -83,7 +83,7 @@ load_boot:
     # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
     # addressing.
     movb $0x42, %ah
-    pushl $0
+    pushl $0 # LBA [32:63]
     pushl %ecx # LBA [0:31]
     movl %edi, %esi
     shll $9, %esi
@@ -97,10 +97,10 @@ load_boot:
     int $0x13
     jc .read_failure
 1:  jmp load_fakix_boot_offset
-    addl $0x10, %esp
     incl %edi
     incl %ecx
-2:  cmpl 0x48(%ebx), %edi
+2:  addl $0x10, %esp
+    cmpl 0x48(%ebx), %edi
     jb .load_boot_loop
 
     # FAKIX modules are actually just ELF64 executables. In every ELF header,
