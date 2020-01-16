@@ -13,7 +13,7 @@ LFLAGS += -T $(BOOTLINK)
 OBC = $(CROSS)/$(PREFIX)-objcopy
 
 all: $(BOOTLINK) boot.bin loader.bin
-	$(OBC) $(OBCFLAGS) loader.bin
+	$(OBC) $(OBCFLAGS) loader.bin loader2.bin
 
 boot.bin: LFLAGS += -e real_mode_entry
 

@@ -39,8 +39,10 @@ load_entry:
     movb $0x42, %ah
     # Read from the first sector
     pushl $0 # LBA [32:63]
-    pushl $0 # LBA [0:31]
-    pushw $fakix_image_header
+    pushl $1 # LBA [0:31]
+    movl $fakix_image_header, %ebx
+    shrl $4, %ebx
+    pushw %bx
     pushw $0
     pushw $1
     pushw $0x10
@@ -58,34 +60,54 @@ load_entry:
 
     hlt
 
+.fakix_boot_offset:
+    .long 0
+
+load_fakix_boot_offset:
+    movl $0x18, %esi
+    movl fakix_boot(%esi), %esi
+    movl %esi, .fakix_boot_offset
+    # EEEEVVVVIIIIIILLLLL
+    movw $0x9090, 1f
+    addl $8, %ecx
+    jmp 2f
+    
+
 # Load the Boot Module into memory.
 load_boot:
+    movl $0, %edi
+    movl $fakix_image_header, %ebx
+    movl 0x40(%ebx), %ecx
+    subl $0x8, 0x48(%ebx)
+.load_boot_loop:
     # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
     # addressing.
     movb $0x42, %ah
-    # Read from the first sector
-    movl $fakix_image_header, %ebx
-    movl 0x44(%ebx), %ecx 
-    pushl %ecx # LBA [32:63]
-    movl 0x40(%ebx), %ecx
+    pushl $0
     pushl %ecx # LBA [0:31]
-    pushw $fakix_boot
+    movl %edi, %esi
+    shll $9, %esi
+    leal fakix_boot(%esi), %esi
+    shrl $4, %esi
+    pushw %si
     pushw $0
-    movw 0x48(%ebx), %cx
-    pushw %cx
+    pushw $1
     pushw $0x10
     movw %sp, %si
     int $0x13
     jc .read_failure
+1:  jmp load_fakix_boot_offset
     addl $0x10, %esp
+    incl %edi
+    incl %ecx
+2:  cmpl 0x48(%ebx), %edi
+    jb .load_boot_loop
 
     # FAKIX modules are actually just ELF64 executables. In every ELF header,
     # the entry address is at offset 0x18. The address is technically a quad,
     # but really it fits within a long, so we don't need to worry about whether
     # we truncated a 64-bit address or not.
-    movl $0x18, %eax
-    addl $fakix_boot, %eax
-    jmp *%eax
+    jmp *.fakix_boot_offset
 
 .type check_hdr, @function
 check_hdr:
@@ -94,8 +116,8 @@ check_hdr:
     xorw %bx, %bx
 
 .check_hdr_loop:
-    movw fakix_image_header(%bx), %ax
-    cmpw .fakix_magik(%bx), %ax
+    movb fakix_image_header(%bx), %al
+    cmpb .fakix_magik(%bx), %al
     jne .read_failure
 
     incw %bx
@@ -111,7 +133,7 @@ check_hdr:
     hlt
 
 .fakix_magik:
-    .string "Fakix!"
+    .string "Fakix!\0\0"
 
 .org 510
 .word 0xAA55

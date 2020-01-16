@@ -132,6 +132,7 @@ sub usage
 
 # Retrieve and validate arguments
 GetOptions(
+    "loader=s" => \my $loader,
     "boot=s" => \my $boot,
     "kern=s" => \my $kern,
     "root=s" => \my $root,
@@ -156,6 +157,7 @@ if (defined $makedir) {
 
 die "Option --boot/-b not specified" unless defined $boot;
 die "Option --kern/-k not specified" unless defined $kern;
+die "Option --loader/-l not specified" unless defined $loader;
 
 (my $output_file, my $output_dir, undef) = fileparse $output_path;
 my $output = ($output_file eq "") ? "$output_dir/fakix.img" : $output_path;
@@ -181,6 +183,12 @@ system "fallocate -l $size $output";
 open $dsk, ">", $output
     or die "Could not open $output for writing";
 
+open LOADER, "<", $loader;
+my $bootloader;
+read LOADER, $bootloader, BLOCK_SIZE;
+print $dsk (pack "a512", $bootloader);
+close LOADER;
+
 # How the header is represented in C.
 # struct fakix_image_header {
 #     uint64_t magic;
@@ -195,7 +203,6 @@ open $dsk, ">", $output
 #     uint64_t boot_block_size;
 # };
 
-
 (undef, undef, undef, undef, undef, undef, undef, 
 my $kernsize, undef, undef, undef, undef, undef) = stat $kern;
 my $kernblocks = ($kernsize + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -204,31 +211,35 @@ my $kernblocks = ($kernsize + BLOCK_SIZE - 1) / BLOCK_SIZE;
 my $bootsize, undef, undef, undef, undef, undef) = stat $boot;
 my $bootblocks = ($bootsize + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-my $remaining_blocks = $dskblocks - $kernblocks - $bootblocks;
+my $remaining_blocks = $dskblocks - $kernblocks - $bootblocks - 2;
 my $swapblocks = $remaining_blocks / 4;
-my $fsblocks = $remaining_blocks - $swapblocks - 1;
+my $fsblocks = $remaining_blocks - $swapblocks - 2;
 
 my $header = pack "a8 Q Q Q Q Q Q Q Q Q x![512]", 
     FAKIX_MAGIK, $dskblocks, 
-    1, $kernblocks, 
-    $kernblocks + 1, $swapblocks, 
-    $kernblocks + $swapblocks + 1, $fsblocks,
-    $kernblocks + $swapblocks + $fsblocks + 1, $bootblocks;
+    2, $kernblocks, 
+    $kernblocks + 2, $swapblocks, 
+    $kernblocks + $swapblocks + 2, $fsblocks,
+    $kernblocks + $swapblocks + $fsblocks + 2, $bootblocks;
 
 print $dsk $header;
 
-seek $dsk, ($kernblocks + $swapblocks + 1) * BLOCK_SIZE, 0;
+seek $dsk, ($kernblocks + $swapblocks + 2) * BLOCK_SIZE, 0;
 # Create the initial Fakix directory structure.
 ddir($root) unless not defined $root;
 
-seek $dsk, BLOCK_SIZE, 0;
+seek $dsk, BLOCK_SIZE * 2, 0;
 open KERN, "<", $kern;
-print $dsk <KERN>;
+my $kernmodule;
+read KERN, $kernmodule, $kernsize;
+print $dsk (pack "a" . ($kernsize) . " x![512]", $kernmodule);
 close KERN;
 
-seek $dsk, ($kernblocks + $swapblocks + $fsblocks + 1) * BLOCK_SIZE, 0;
+seek $dsk, ($kernblocks + $swapblocks + $fsblocks + 2) * BLOCK_SIZE, 0;
 open BOOT, "<", $boot;
-print $dsk <BOOT>;
+my $bootmodule;
+read BOOT, $bootmodule, $bootsize;
+print $dsk (pack "a" . ($bootsize) . " x![512]", $bootmodule);
 close BOOT;
 
 close $dsk;

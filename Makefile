@@ -8,16 +8,19 @@ all:
 	tools/mkusr -r root \
 		-k kernel/kernel.bin \
 		-b boot/boot.bin \
+		-l boot/loader.img \
 		-o boot/fakix.img
+
+
+# -device ioh3420,id=root_port1,chassis=0,slot=0,bus=pcie.0 \
+# -device ahci,bus=root_port1,id=ahci \
 
 run:
 	qemu-system-$(ARCH) \
-		-drive file=boot/loader.img,index=0,media=disk,format=raw \
-		-drive id=fakixdisk,file=boot/fakix.img,index=1,media=disk,format=raw \
-		-device ioh3420,id=root_port1,chassis=0,slot=0,bus=pcie.0 \
-        -device ahci,bus=root_port1,id=ahci \
+		-drive id=fakixdisk,file=boot/fakix.img,index=0,media=disk,format=raw \
 		-nographic \
-		-monitor telnet::45454,server,wait \
+		-s -S \
+		-monitor telnet::45454,server,nowait \
 		-serial mon:stdio \
 		-M q35
 

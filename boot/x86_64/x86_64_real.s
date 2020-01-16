@@ -27,25 +27,27 @@ real_mode_entry:
     jne error
 
     # Validate the RSDP we found.
-    movw %ax, %di
+    xorl %eax, %eax
+    movw %es, %ax
+    shll $4, %eax
+    movl %eax, %edi
     movw $20, %si
     movw $36, %ax
-    cmpw $2, 15(%di) # ACPI v2 RSDP contains an extra 16 bytes of information.
+    cmpb $2, 15(%edi) # ACPI v2 RSDP contains an extra 16 bytes of information.
     cmovew %ax, %si
     call chksum
     testb %al, %al
     jne error
 
-    movl 16(%di), %eax
-    cmpw $2, 15(%di)
+    movl 16(%edi), %eax
+    cmpw $2, 15(%edi)
     jne 1f
-    movl 40(%di), %eax
+    movl 40(%edi), %eax
 1:  movl %eax, fakix_rsdt
 
     # Scrounge as much useful BIOS information before disabling interrupts to
     # prepare for entering protected mode.
     call generate_mmap
-    
 
     # Load the kernel into physical memory
     call load_kernel
@@ -160,20 +162,22 @@ find_rsdp:
         jb .find_rsdp_cmp
     .find_rsdp_cmp_end:
 
-    cmpb %al, %ah
-    movw $0, %si
+    cmpw $8, %si
     je .find_rsdp_loop_end
+    movw $0, %si
     
-    pushw %ax
-    movw %es, %ax
-    incw %ax
-    movw %ax, %es
+    movw %es, %dx
+    incw %dx
+    movw %dx, %es
+    jno .find_rsdp_loop
+
+    movw $0xFFFF, %ax
+    movw %ax, %si
     popw %ax
-    jnc .find_rsdp_loop
+    ret
 
 .find_rsdp_loop_end:
-    movw $0xFFFF, %ax
-    cmovcw %ax, %si
+    movw $0, %si
     popw %ax
     ret
 
@@ -186,15 +190,15 @@ find_rsdp:
 # %al - Contains the sum & 0xFF after the procedure is invoked.
 #
 chksum:                # uint8_t chksum(uint8_t *sdt, uint16_t bytes)
-                       # {
+    pushl %edi         # {
     xorb %al, %al      #     uint8_t sum = 0;
 .chksum_loop:          #     while (cnt != 0) {
-    addb (%di), %al    #         sum += *sdt;
-    incw %di           #         sdt++;       
+    addb (%edi), %al   #         sum += *sdt;
+    incl %edi          #         sdt++;       
     decw %si           #         cnt--;
-    jne .chksum_loop   #     }
-    ret                #     return sum;
-                       # }
+    jnz .chksum_loop   #     }
+    popl %edi          #     return sum;
+    ret                # }
 
 error:
     hlt
