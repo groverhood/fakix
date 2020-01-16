@@ -22,6 +22,10 @@
 .globl real_mode_entry
 .type real_mode_entry, @function
 real_mode_entry:
+    # Load the kernel into physical memory
+    call load_kernel
+
+    # Find the Root System Descriptor Pointer (RSDP)
     call find_rsdp
     testw %si, %si
     jne error
@@ -49,9 +53,6 @@ real_mode_entry:
     # prepare for entering protected mode.
     call generate_mmap
 
-    # Load the kernel into physical memory
-    call load_kernel
-
     # We will reenable interrupts after we initialize our IDT in long mode
     cli
 
@@ -62,39 +63,50 @@ real_mode_entry:
     orl $1, %eax
     movl %eax, %cr0
 
-    ljmp $0x8, $protected_mode_entry
+    jmp protected_mode_entry
 
 /* The kernel entry point. */
 .globl fakix_kernel_entry
 fakix_kernel_entry:
     .long 0
 
+load_fakix_kern_entry:
+    movl $0x18, %esi
+    movl fakix_kern_start(%esi), %esi
+    movl %esi, fakix_kernel_entry
+    movw $0x9090, 1f
+    addl $0xC0, %ecx
+    jmp 2f
+
 # Load the FAKIX kernel into physical memory starting at fakix_kern_start.
 load_kernel:
+    movl $0, %edi
+    movl $fakix_image_header, %ebx
+    movl 0x10(%ebx), %ecx
+    subl $0xC0, 0x18(%ebx)
+.load_kernel_loop:
     # 42h is the BIOS int 13h opcode for 'Read Sectors' using logical block
     # addressing.
     movb $0x42, %ah
-    # Read from the first sector
-    movl $fakix_image_header, %ebx
-    movl 0x14(%ebx), %ecx 
-    pushl %ecx # LBA [32:63]
-    movl 0x10(%ebx), %ecx
+    pushl $0 # LBA [32:63]
     pushl %ecx # LBA [0:31]
-    movl $fakix_kern_start, %ecx
-    pushw %cx
-    shrl $4, %ecx
-    pushw %cx
-    movw 0x18(%ebx), %cx # Number of sectors to read
-    pushw %cx
+    movl %edi, %esi
+    shll $9, %esi
+    leal fakix_kern_start(%esi), %esi
+    shrl $4, %esi
+    pushw %si
+    pushw $0
+    pushw $1
     pushw $0x10
     movw %sp, %si
     int $0x13
     jc error
-    addl $0x10, %esp
-
-    movl $fakix_kern_start, %ecx
-    movl 0x18(%ecx), %eax
-    movl %eax, fakix_kernel_entry
+1:  jmp load_fakix_kern_entry
+    incl %edi
+    incl %ecx
+2:  addl $0x10, %esp
+    cmpl 0x18(%ebx), %edi
+    jb .load_kernel_loop
 
     ret
 
