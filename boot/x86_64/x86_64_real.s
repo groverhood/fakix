@@ -11,6 +11,32 @@
 .code16
 .section .text
 
+.globl gdtdata
+
+gdt:
+	.quad 0
+.equ gdtcode, (. - gdt)
+	.word 0xFFFF
+    .word 0x0000
+    .byte 0
+    .byte 0x9A
+    .byte 0xCF
+    .byte 0
+.equ gdtdata, (. - gdt)
+	.word 0xFFFF
+    .word 0
+    .byte 0
+    .byte 0x92
+    .byte 0xCF
+    .byte 0
+gdtp:
+	.word (. - gdt - 1)
+	.long gdt
+
+.pseudo_idtp:
+    .word 0
+    .long 0
+
 # Protected mode entry point.
 .extern protected_mode_entry
 
@@ -58,12 +84,18 @@ real_mode_entry:
 
     call enable_a20_line
 
+    # Disallow BIOS interrupts
+    lidt .pseudo_idtp
+
+    # Load the Global Descriptor Table
+    lgdt gdtp
+    
     # Set Protection Enable bit [CR0:0]
     movl %cr0, %eax
     orl $1, %eax
     movl %eax, %cr0
 
-    jmp protected_mode_entry
+    ljmpl $gdtcode, $protected_mode_entry
 
 /* The kernel entry point. */
 .globl fakix_kernel_entry

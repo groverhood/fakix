@@ -10,14 +10,27 @@
 .section .text
 
 .extern fakix_kern_start
+.extern fakix_gdt_kern_data
+.extern fakix_pr_stack
+
+.virtual_entry_address:
+    .quad 0
 
 .globl long_mode_entry
 long_mode_entry:
-    # Temporary. Remove this after verying the bootloader works.
-    hlt
+    movw $fakix_gdt_kern_data, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movq $0xFFFF800000000000, %rsp
+    addq $fakix_pr_stack, %rsp
+
     movq $0xFFFF800000000000, %rax
-    movq $fakix_kern_start, %rcx
-    call *0x18(%rax, %rcx)
+    addq $fakix_kern_start, %rax
+    movq %rax, .virtual_entry_address
+    call *(.virtual_entry_address)
 
 # In theory, this should be unreachable, as the kernel is tasked with coming to
 # terms with its own demise.
