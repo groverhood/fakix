@@ -4,20 +4,24 @@
 SECTIONS
 {
     /* This must be defined for all architectures. */
-    . = FAKIX_KERN_START;
+    . = FAKIX_KERN_START + 0xFFFF800000000000;
 
-    .text ALIGN(0x1000) : AT(ADDR(.text) - 0xFFFF800000000000) {
+    .text ALIGN(4K) : AT(ADDR(.text) - 0xFFFF800000000000) {
         *(.text.fakix_start);
         *(.text);
         _etext = ABSOLUTE(.);
     }
 
-    .data ALIGN(0x1000) : AT(ADDR(.text) - 0xFFFF800000000000) {
+    .rodata ALIGN(4K) : AT(ADDR(.text) - 0xFFFF800000000000) {
+        *(.rodata);
+    }
+
+    .data ALIGN(4K) : AT(ADDR(.data) - 0xFFFF800000000000) {
         *(.data);
         _edata = ABSOLUTE(.);
     }
 
-    .bss ALIGN(0x1000) : AT(ADDR(.bss) - 0xFFFF800000000000) {
+    .bss ALIGN(4K) : AT(ADDR(.bss) - 0xFFFF800000000000) {
         *(.bss);
         _end = ABSOLUTE(.);
     }

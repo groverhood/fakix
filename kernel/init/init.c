@@ -1,10 +1,16 @@
 
+#include <stdbool.h>
 #include <fakix.h>
 #include <arch/compat.h>
 #include <paging/table.h>
 #include <paging/conv.h>
 
 extern int fakix_main(struct fakix_system_table *systable);
+
+#define hang() \
+    do { \
+        __asm__ __volatile__ ("nop");\
+    } while (true)
 
 void fakix_start(void)
 {
@@ -18,6 +24,9 @@ void fakix_start(void)
     };
 
     if (fakix_main(&systable) != 0) {
-        
+        /* Handle fatal kernel error... */
     }
+
+    /* For now, just loop forever... */
+    hang();
 }
