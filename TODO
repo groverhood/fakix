@@ -1,5 +1,4 @@
-1. Refactor load_kernel.
-2. Fix any additional bugs that pop up in the bootloader
-3. Devise a compression system for the kernel module.
-4. Write a readme.
-5. Figure out a good license.
+1. Start implementing usage cases for the system table.
+2. Devise a compression system for the kernel module.
+3. Write a readme.
+4. Download GPLv3 and copy it into LICENSE.
