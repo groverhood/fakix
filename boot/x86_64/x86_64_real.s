@@ -72,7 +72,7 @@ real_mode_entry:
     movl 16(%edi), %eax
     cmpw $2, 15(%edi)
     jne 1f
-    movl 40(%edi), %eax
+    movl 24(%edi), %eax
 1:  movl %eax, fakix_rsdt
 
     # Scrounge as much useful BIOS information before disabling interrupts to
@@ -146,11 +146,12 @@ load_kernel:
 # on the returned list. During kernel initialization, it is expected that some
 # sorting + coalescing of overlapping regions will be performed.
 generate_mmap:
-    xorw %ax, %ax
-    movw %ax, %es
+    xorw %di, %di
     xorl %ebx, %ebx
     movl $0x534D4150, %edx
-    movw $fakix_memmap, %di
+    movw $fakix_memmap, %ax
+    shrw $4, %ax
+    movw %ax, %es
 
 .generate_mmap_loop:
     movl $0xE820, %eax
@@ -160,8 +161,10 @@ generate_mmap:
 
     cmpl $0x534D4150, %eax
     jne error
+    jc error
 
-    jc .generate_mmap_loop_end
+    testl %ebx, %ebx
+    je .generate_mmap_loop_end
     addw $24, %di
     cmpw $0x600, %di
     jb .generate_mmap_loop
