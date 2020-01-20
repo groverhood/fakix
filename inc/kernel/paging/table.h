@@ -6,6 +6,8 @@
 /* Page table entry. Its size is equivalent to the word size of the machine. */
 typedef size_t pte_t;
 
+void paging_table_init(pte_t *kernel_root);
+
 /**
  *  Sets the active page table to the provided pointer.
  * 
@@ -14,5 +16,8 @@ typedef size_t pte_t;
  *      table, so FAKIX will just let itself GP fault.
  **/
 void paging_table_set_to(pte_t *root);
+
+void paging_table_map(pte_t *root, void *virtual_addr, uintptr_t phys_addr);
+void paging_table_unmap(pte_t *root, void *virtual_addr);
 
 #endif

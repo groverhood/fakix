@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#define FAKIX_HUGEPAGE 0x40000000
+#define FAKIX_BIGPAGE 0x200000
+#define FAKIX_PAGE 0x1000
+
 #define FAKIX_PHYSBASE ((uintptr_t)0xFFFF800000000000)
 
 static inline void *conv_phys_to_kern(uintptr_t phys)
