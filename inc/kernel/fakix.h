@@ -24,7 +24,7 @@ struct fakix_memmap {
     uint32_t acpi_extented_attrs;
 };
 
-struct fakix_sdt {
+packed struct fakix_sdt {
     char signature[4];
     uint32_t length;
     uint8_t revision;
