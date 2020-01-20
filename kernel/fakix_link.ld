@@ -12,7 +12,7 @@ SECTIONS
         _etext = ABSOLUTE(.);
     }
 
-    .rodata ALIGN(4K) : AT(ADDR(.text) - 0xFFFF800000000000) {
+    .rodata ALIGN(4K) : AT(ADDR(.rodata) - 0xFFFF800000000000) {
         *(.rodata);
     }
 

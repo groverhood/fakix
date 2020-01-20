@@ -34,10 +34,10 @@ SECTIONS
     fakix_boot_pgdir = FAKIX_BOOT_PGDIR;
     fakix_boot_pgtbl = FAKIX_BOOT_PGTBL;
 
+    /* To ensure access to the entire physical address space, the kernel
+       operates in G-pages. */
     fakix_kern_pml4 = FAKIX_KERN_PML4;
     fakix_kern_pdp = FAKIX_KERN_PDP;
-    fakix_kern_pgdir = FAKIX_KERN_PGDIR;
-    fakix_kern_pgtbl = FAKIX_KERN_PGTBL;
 
     fakix_kern_start = FAKIX_KERN_START;
 

@@ -2,8 +2,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #define FORMAT_INDICATOR_CHR ('%')
+#define isnegative(i, s) (i & (1 << (s * 8 - 1)))
+#define max(a, b) ({ __auto_type _a = a; __auto_type _b = b; _a > _b ? a : b; })
 
 enum format_data_type {
 	FMTDATA_INT,
@@ -75,15 +78,13 @@ static void fmt_defaults(struct format_arg_info *out)
 
 static char *read_format(const char *format, struct format_arg_info *pfarg)
 {
-	const char *flagspecs = "#0- +";
-	const char *sizespecs = "lhztjL";
-	const char *convspecs = "diouxXeEfFgGaAcspn%";
+	// const char *convspecs = "diouxXeEfFgGaAcspn%";
 
 	/* Skip xprintf() format delimeter. */
 	format++;
 	int chr = *format++;
 
-	while (chr && strchr(flagspecs, chr)) {
+	while (chr && strchr("#0- +", chr)) {
 		switch (chr) {
 			case '#': pfarg->alternate_form = true; break;
 			case '0': {
@@ -106,7 +107,7 @@ static char *read_format(const char *format, struct format_arg_info *pfarg)
 		chr = *format++;
 	}
 
-	if (strchr(sizespecs, chr)) {
+	if (strchr("lhztjL", chr)) {
 		switch (chr) {
 			case 'l': {
 				int size = 8;

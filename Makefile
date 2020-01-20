@@ -22,6 +22,7 @@ run:
 		-s -S \
 		-monitor telnet::45454,server,nowait \
 		-serial mon:stdio \
+		-m 1G \
 		-M q35
 
 clean:

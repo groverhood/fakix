@@ -217,6 +217,20 @@ setup_kern_page_table:
     orl $0x03, %eax
     movl %eax, (0x800 + fakix_boot_pml4)
 
+    movl $3, %edx
+
+    xorl %ecx, %ecx
+    .map_kern_pagetable:
+        movl %ecx, %eax
+		shll $6, %eax
+        jo .setup_ret
+		movl $0x83, fakix_kern_pdp(, %ecx, 8)
+        movl %eax, fakix_kern_pdp(%edx, %ecx, 8)
+		addl $1, %ecx
+		cmpl $0x200, %ecx
+		jl .map_kern_pagetable
+
+    /*
     movl $fakix_kern_pgdir, %eax
     orl $0x03, %eax
     movl %eax, (fakix_kern_pdp)
@@ -234,5 +248,7 @@ setup_kern_page_table:
 		addl $1, %ecx
 		cmpl $0x200, %ecx
 		jl .map_kern_pagetable
+    */
 
+.setup_ret:
     ret

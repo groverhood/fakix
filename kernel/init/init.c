@@ -15,12 +15,16 @@ extern int fakix_main(struct fakix_system_table *systable);
 void fakix_start(void)
 {
     /* After this, boot code will no longer be accessible. */
-    paging_table_set_to(FAKIX_KERN_PAGE_TABLE);
+    paging_table_init(FAKIX_KERN_PAGE_TABLE);
+
+    void *mmap = FAKIX_KERNEL_MMAP;
+    void *imghdr = FAKIX_KERNEL_IMAGE_HEADER;
+    uintptr_t *prsdt = FAKIX_KERNEL_RSDT;
 
     struct fakix_system_table systable = {
-        conv_phys_to_kern(FAKIX_KERNEL_MMAP),
-        conv_phys_to_kern(FAKIX_KERNEL_IMAGE_HEADER),
-        conv_phys_to_kern(FAKIX_KERNEL_RSDT)
+        mmap,
+        imghdr,
+        conv_phys_to_kern(*prsdt)
     };
 
     if (fakix_main(&systable) != 0) {
