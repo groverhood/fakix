@@ -1,15 +1,15 @@
 
-#include <stdbool.h>
-#include <fakix.h>
 #include <arch/compat.h>
-#include <paging/table.h>
+#include <fakix.h>
 #include <paging/conv.h>
+#include <paging/table.h>
+#include <stdbool.h>
 
 extern int fakix_main(struct fakix_system_table *systable);
 
-#define hang() \
-    do { \
-        __asm__ __volatile__ ("nop");\
+#define hang()                                                                 \
+    do {                                                                       \
+        __asm__ __volatile__("nop");                                           \
     } while (true)
 
 void fakix_start(void)
@@ -21,11 +21,8 @@ void fakix_start(void)
     void *imghdr = FAKIX_KERNEL_IMAGE_HEADER;
     uintptr_t *prsdt = FAKIX_KERNEL_RSDT;
 
-    struct fakix_system_table systable = {
-        mmap,
-        imghdr,
-        conv_phys_to_kern(*prsdt)
-    };
+    struct fakix_system_table systable = {mmap, imghdr,
+                                          conv_phys_to_kern(*prsdt)};
 
     if (fakix_main(&systable) != 0) {
         /* Handle fatal kernel error... */

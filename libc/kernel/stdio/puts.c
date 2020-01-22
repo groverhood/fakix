@@ -1,15 +1,15 @@
-#include <stdio.h>
-#include <string.h>
 #include <io/risky.h>
 #include <io/serial.h>
+#include <stdio.h>
+#include <string.h>
 
 int puts(const char *s)
 {
-	if (serial_initialized) {
-		
-	} else {
-		risky_puts(s);
-	}
+    if (serial_initialized) {
 
-	return (int)strlen(s);
+    } else {
+        risky_puts(s);
+    }
+
+    return (int)strlen(s);
 }

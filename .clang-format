@@ -2,7 +2,6 @@
 IndentWidth: 4
 ---
 Language: Cpp
-AlignConsecutiveMacros: true
 AlignTrailingComments: true
 BreakBeforeBraces: Linux
 ColumnLimit: 80

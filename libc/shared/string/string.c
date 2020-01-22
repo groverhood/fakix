@@ -1,84 +1,84 @@
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 size_t strlen(const char *s)
 {
-	size_t result = 0;
-	while (*s++) {
-		result++;
-	}
-	return result;
+    size_t result = 0;
+    while (*s++) {
+        result++;
+    }
+    return result;
 }
 
 char *strchr(const char *str, int chr)
 {
-	int c;
-	while ((c = *str) != chr) {
-		str++;
-		if (!c) {
-			return 0;
-		}
-	}
+    int c;
+    while ((c = *str) != chr) {
+        str++;
+        if (!c) {
+            return 0;
+        }
+    }
 
-	return (char *)str;
+    return (char *)str;
 }
 
 void *memcpy(void *dest, const void *src, size_t n)
 {
-	/* Naive approach. */
-	unsigned char *pdest = dest;
-	const unsigned char *psrc = src;
-	while (n-- > 0) {
-		*pdest++ = *psrc++;
-	}
+    /* Naive approach. */
+    unsigned char *pdest = dest;
+    const unsigned char *psrc = src;
+    while (n-- > 0) {
+        *pdest++ = *psrc++;
+    }
 
-	return dest;
+    return dest;
 }
 
 void *memset(void *dest, register int val, register size_t len)
 {
-	unsigned char *ptr = (unsigned char*)dest;
-	if (len % sizeof(size_t) > 0) {
-		while (len-- > 0 && len % sizeof(size_t) > 0)
-			*ptr++ = val;
-	}
+    unsigned char *ptr = (unsigned char *)dest;
+    if (len % sizeof(size_t) > 0) {
+        while (len-- > 0 && len % sizeof(size_t) > 0)
+            *ptr++ = val;
+    }
 
-	size_t *wptr = (size_t *)ptr;
-	union {
-		unsigned char data[sizeof *wptr];
-		size_t val;
-	} wval;
+    size_t *wptr = (size_t *)ptr;
+    union {
+        unsigned char data[sizeof *wptr];
+        size_t val;
+    } wval;
 
-	size_t i;
-	for (i = 0; i < sizeof *wptr; ++i) {
-		wval.data[i] = val;
-	}
+    size_t i;
+    for (i = 0; i < sizeof *wptr; ++i) {
+        wval.data[i] = val;
+    }
 
-	while (len > 0) {
-		*wptr++ = wval.val;
-		len -= sizeof *wptr;
-	}
-	
-	return dest;
+    while (len > 0) {
+        *wptr++ = wval.val;
+        len -= sizeof *wptr;
+    }
+
+    return dest;
 }
 
 int strncmp(const char *left, const char *right, size_t count)
 {
-	int chrdif;
-	while (*left && *right && (count-- > 0)) {
-		chrdif = (*left - *right);
-		if (chrdif != 0) {
-			break;
-		}	
-		left++;
-		right++;
-	}
+    int chrdif;
+    while (*left && *right && (count-- > 0)) {
+        chrdif = (*left - *right);
+        if (chrdif != 0) {
+            break;
+        }
+        left++;
+        right++;
+    }
 
-	if (!*left && *right) {
-		chrdif = *right;
-	} else if (*left && !*right) {
-		chrdif = *left;
-	}
+    if (!*left && *right) {
+        chrdif = *right;
+    } else if (*left && !*right) {
+        chrdif = *left;
+    }
 
-	return chrdif;
+    return chrdif;
 }
