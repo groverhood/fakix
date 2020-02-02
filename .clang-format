@@ -8,3 +8,4 @@ ColumnLimit: 80
 IncludeBlocks: Merge
 PointerAlignment: Right
 SpaceBeforeParens: ControlStatements
+UseTab: Never
