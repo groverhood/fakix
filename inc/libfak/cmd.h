@@ -10,6 +10,12 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <sys.h>
+
+/* Send command. */
+#define SYS_CMD_SEND SYSNUM(0x80)
+/* Receive command. */
+#define SYS_CMD_RECV SYSNUM(0x81)
 
 /* These two data types are left to be defined by the processes that are
    communicating. */

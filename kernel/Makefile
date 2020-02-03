@@ -3,7 +3,7 @@ include ../Make.rules
 
 CFLAGS += -D__FAKIX_KERN__ -fPIE
 LFLAGS += -T fakix_link.generated.ld --no-relax
-INCS = $(PWD)/inc/kernel $(PWD)/inc/libc $(PWD)/inc/kernel/arch/x86_64
+INCS = $(PWD)/inc/kernel $(PWD)/inc/libc $(PWD)/inc/kernel/arch/x86_64 $(PWD)/inc/posix $(PWD)/inc/libfak
 SRCS = $(shell find $(PWD)/kernel -path */arch -prune -o \( -name "*.c" -o -name "*.$(ASEXT)" \) -a -print)
 SRCS += $(shell find $(PWD)/kernel/arch/$(ARCH) \( -name "*.c" -o -name "*.$(ASEXT)" \) -a -print)
 SRCS += $(shell find $(PWD)/libc/shared \( -name "*.c" -o -name -"*.$(ASEXT)" \) -a -print)

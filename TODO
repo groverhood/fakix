@@ -1,3 +1,7 @@
-1. Start implementing usage cases for the system table.
-2. Devise a compression system for the kernel module.
-3. Write a readme.
+1. Implement device drivers:
+	a. AHCI
+	b. APIC
+2. Build the skeleton for userland programs:
+	a. Implement commands.
+	b. Define symbols exposed in procst.h
+	c. Implement servers (memory, scheduling, inode)

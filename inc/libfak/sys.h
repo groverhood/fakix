@@ -22,6 +22,9 @@ typedef uintptr_t syscaddr_t;
 #define SYSNUM(n) ((sysnum_t)(n))
 #define SYSNUM_MAX UINT8_MAX
 
+/* Acquire system call info. */
+#define SYSNUM_SYS_INFO SYSNUM(0x00)
+
 struct syscall_info {
     sysargc_t argc; /* Argument count. */
     syscaddr_t fptr; /* Syscall address. */

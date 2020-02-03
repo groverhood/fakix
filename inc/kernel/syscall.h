@@ -15,7 +15,8 @@
 #define conv_kern_to_sys(fptr) ((syscaddr_t)(fptr))
 
 void syscall_init(void);
-void syscall_map(sysnum_t sysn, const struct syscall_info *info);
-void syscall_add(const struct syscall_info *info);
+void syscall_init_table(void);
+void syscall_map(sysnum_t sysn, syscaddr_t fptr);
+void syscall_add(syscaddr_t fptr);
 
 #endif
