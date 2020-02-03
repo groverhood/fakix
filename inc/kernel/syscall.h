@@ -11,11 +11,6 @@
 
 #include <sys.h>
 
-#define SYSNUM(n) ((sysnum_t)(n))
-
-/* Acquire system call info. */
-#define SYSNUM_SYS_INFO SYSNUM(0x00)
-
 /* syscaddr_t conv_kern_to_sys(FUNC *fptr); */
 #define conv_kern_to_sys(fptr) ((syscaddr_t)(fptr))
 
