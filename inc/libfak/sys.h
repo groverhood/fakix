@@ -20,9 +20,7 @@ typedef int sysargc_t;
 typedef uintptr_t syscaddr_t;
 
 #define SYSNUM(n) ((sysnum_t)(n))
-
-/* Acquire system call info. */
-#define SYSNUM_SYS_INFO SYSNUM(0x00)
+#define SYSNUM_MAX UINT8_MAX
 
 struct syscall_info {
     sysargc_t argc; /* Argument count. */
@@ -40,10 +38,7 @@ bool sys_info(sysnum_t sysn, struct syscall_info *res_info);
         sys_trap ## argc (sysn, rval, __VA_ARGS__); \
         rval; \
     }) 
-
 #define __sys_trap1__(sysn, argc, ret, ...) __sys_trap2__(sysn, argc, ret, __VA_ARGS__)
-
-
 #define sys_trap(sysn, ret, ...) __sys_trap1__(sysn, sys_argc(__VA_ARGS__), ret, __VA_ARGS__)
 
 #endif

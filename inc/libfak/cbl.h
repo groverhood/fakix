@@ -52,4 +52,6 @@ struct capability {
 	caprights_t rights; /* Access rights. */
 };
 
+
+
 #endif

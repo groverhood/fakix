@@ -56,6 +56,8 @@ fakix_gdt:
     .byte 0x92
     .byte 0xC0
     .byte 0x00
+# NULL selector
+    .quad 0
 .equ fakix_gdt_user_code, (. - fakix_gdt)
     .word 0x0000
     .word 0x0000
