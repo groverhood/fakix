@@ -13,4 +13,6 @@
 #define kernel_unfriendly
 #endif
 
+#define align(X) __attribute__((aligned (X)))
+
 #endif

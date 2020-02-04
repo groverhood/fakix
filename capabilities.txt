@@ -1,0 +1,88 @@
+Capabilities and Memory Management
+
+Access Control Matrix:
+    representation/definition of permissible operations in a system.
+    dynamic data structure with frequent cdhanges.
+    very sparse with many repeated entries.
+    impractical to store explicitly.
+
+            Objects
+================================
+Subjects | u1 | u2 | u3 | fs |
+   u1    |    |    |    | wr |
+   u2    |    |    |    | rw |
+
+Most common discretionary mechanisms:
+    Access control list: stores a column (who can access this)
+    Capabilities: stores a row (what this can access)
+
+Issues for discretionary access control
+    Propagation: How can a subject grant access to another?
+    Restriction: How can a subject propagate a subset of its rights?
+    Revocation: Can access, once granted, be revoked?
+    Amplification: 
+        Can an unprivileged subject perform restricted operations?
+        Temporary promotion of a subject's particular rights.
+    Determination of object accessibility:
+        Which subjects have access to a particular object?
+        Is an object accessible by any subject? (garbage collection)
+    Determination of subject's protection domain:
+        Which objects are accessible to a particular subject?
+
+Access Control Lists:
+    Implemented by most commodity systems
+    ACL associated with the object:
+        Propagation: meta right (chown, chgrp, setfacl)
+        Restriction: meta right
+        Revocation: meta right
+        Amplification (setuid, sudo)
+        Accessibility: Explicit in ACL
+        Protection domain: Hard to determine
+    Usually condensed via groups/classes
+    Can have negative rights
+    Sometimes implicit (e.g. UNIX process heirarchy)
+
+Capabilities:
+    Main advantage is fine-grained access control:
+        Easy to provide access to specific subjects
+        Easy to delegate permissions to others
+    A capability presents prima facie evidence of right to access:
+        Think of it as a key
+        Any representation must protect capabilities against forgery
+    Consists of an object identifier and a set of access rights
+        Implies object naming (solves the confused deputy problem)
+    Capability lists are associated with the subject:
+        Propagation: Copy/transfer capabilities between subjects
+        Restriction: Requires creation of new (derived) capabilities
+        Revocation: Requires invalidation of capabilities from all subjects
+        Amplification: Special invocation capability
+        Accessibility: Requires inspection of all capability lists (hard to det.)
+        Protection domain: Explicit in capability list
+    Implementations:
+        Tagged capabilities:
+            Protected by hardware
+            Tag bit for each word in memory that identifies if a word is a
+            capability or not
+            Tag bit can only be set in kernel mode
+        Sparse capabilities:
+            Protected by encryption
+            Probabilistically correct (because of encryption)
+            Add random bitstring to capability
+            Object ID, rights, and signature (OID and rights encrypted with private key)
+        Partitioned capabilities:
+            Protected by software
+            System maintains capabilities for each process in separate address space
+            called the cspace
+            User code only handles indirect references to capabilities
+            System validates access when performing any privileged operation
+            Most commonly used implementation
+            Capref:
+                Address handed to the kernel to perform privileged capabilities
+                operations
+            CNode capabilities:
+                Storage for capability representations
+                Divided into "slots"
+                Unreadable from user space
+            Frame capabilities:
+                May be "mapped" into user virtual address space
+                Size is a multiple of the OS page size
