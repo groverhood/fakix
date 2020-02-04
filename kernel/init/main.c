@@ -1,14 +1,14 @@
+#include <cmd.h>
 #include <fakix.h>
+#include <hd.h>
 #include <io/dev.h>
 #include <io/disk.h>
 #include <io/serial.h>
 #include <paging/alloc.h>
 #include <paging/table.h>
-#include <syscall.h>
 #include <stdio.h>
+#include <syscall.h>
 #include <task.h>
-#include <cmd.h>
-#include <hd.h>
 
 static void map_syscalls(void);
 

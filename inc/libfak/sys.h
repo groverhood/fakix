@@ -8,6 +8,7 @@
 #ifndef FAKIX_LIBFAK_SYS_H
 #define FAKIX_LIBFAK_SYS_H 1
 
+#include <attributes.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <macro.h>
@@ -30,7 +31,7 @@ struct syscall_info {
     syscaddr_t fptr; /* Syscall address. */
 };
 
-bool sys_info(sysnum_t sysn, struct syscall_info *res_info);
+bool sys_info(sysnum_t sysn, struct syscall_info *res_info) kernel_unfriendly;
 
 #define __sys_argc__(z, a, b, c, d, e, f, count, ...) count
 #define sys_argc(...) macro_expand(__sys_argc__(, ##__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0))

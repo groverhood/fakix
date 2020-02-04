@@ -1,7 +1,7 @@
 #include <io/disk/ahci.h>
 #include <paging/conv.h>
-#include <syn/spinlock.h>
 #include <stdio.h>
+#include <syn/spinlock.h>
 
 enum fis_type {
     FIS_TYPE_REG_H2D = 0x27,   /* Register FIS - Host 2 device */
@@ -315,14 +315,11 @@ size_t ahci_disk_read(void *dest, lbaddr_t src, size_t bytes)
 
     if (slot != -1) {
 
-        // ownerless_spinlock_inline_acquire(&read_lock, abar->tfd & (ATA_DEV_BUSY | ATA_DEV_DRQ));
+        // ownerless_spinlock_inline_acquire(&read_lock, abar->tfd &
+        // (ATA_DEV_BUSY | ATA_DEV_DRQ));
     }
-
 
     return bytes_read;
 }
 
-size_t ahci_disk_write(lbaddr_t dest, const void *src, size_t bytes)
-{
-    
-}
+size_t ahci_disk_write(lbaddr_t dest, const void *src, size_t bytes) {}
