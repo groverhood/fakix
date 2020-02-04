@@ -36,7 +36,7 @@ enum cap_object_type {
 	CAP_OBJ_L2C, /* Level 2 Capability. */
 	CAP_OBJ_RAM, /* Untyped RAM. */
 	CAP_OBJ_FRAME, /* Page frame. */
-	
+
 	/* ARCH_x86_64-specific object types. */
 	CAP_OBJ_PML4, /* PML4 table. */
 	CAP_OBJ_PDP, /* Pagedir pointer table. */
@@ -44,14 +44,20 @@ enum cap_object_type {
 	CAP_OBJ_PTB, /* Page table. */
 };
 
-struct capability {
-	enum cap_object_type type;
+struct cnode {
 	capaddr_t addr; /* [0:3]: L2 index
 	                   [4:31]: L2 physical address (4K aligned) */
 	capslot_t slot; /* L1 index. */
+};
+
+struct capability {
+	struct cnode cnode;
+	enum cap_object_type type;
 	caprights_t rights; /* Access rights. */
 };
 
-
+int cbl_create_cnode(struct capability *out_cap, struct cnode *out_cnode);
+int cbl_create_cap(struct capability dest, enum cap_object_type type, 
+					caprights_t rights, size_t bytes);
 
 #endif

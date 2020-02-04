@@ -1,3 +1,4 @@
+
 #include <io/dev.h>
 #include <io/disk.h>
 #include <io/disk/ahci.h>
@@ -18,12 +19,12 @@ void init_disk_driver(void)
     }
 }
 
-ssize_t disk_read(void *dest, off_t start, size_t bytes)
+size_t disk_read(void *dest, lbaddr_t src, size_t bytes)
 {
-    return disk_read_op(dest, start, bytes);
+    return disk_read_op(dest, src, bytes);
 }
 
-ssize_t disk_write(const void *src, off_t start, size_t bytes)
+size_t disk_write(lbaddr_t dest, const void *src, size_t bytes)
 {
-    return disk_write_op(src, start, bytes);
+    return disk_write_op(dest, src, bytes);
 }

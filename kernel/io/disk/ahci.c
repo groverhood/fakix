@@ -307,7 +307,7 @@ struct hba_cmd_table {
 
 static int abar_find_cmdslot(void);
 
-ssize_t ahci_disk_read(void *dest, off_t start, size_t bytes)
+size_t ahci_disk_read(void *dest, lbaddr_t src, size_t bytes)
 {
     ssize_t bytes_read = 0;
     abar->is = UINT32_MAX;
@@ -322,7 +322,7 @@ ssize_t ahci_disk_read(void *dest, off_t start, size_t bytes)
     return bytes_read;
 }
 
-ssize_t ahci_disk_write(const void *src, off_t start, size_t bytes) 
+size_t ahci_disk_write(lbaddr_t dest, const void *src, size_t bytes)
 {
     
 }

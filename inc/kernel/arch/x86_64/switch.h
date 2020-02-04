@@ -8,9 +8,9 @@
 /* void switch_to(struct task *prev, struct task *next); */
 #define switch_to(prev_task, next_task) \
     do { \
-        static packed struct { segsel_t cs; uint64_t ofs; } ljmp_param = { \
-            .cs = next_task->cs, .ofs = next_task->pc \
-        }; \
+        static packed struct { segsel_t cs; uint64_t ofs; } ljmp_param; \
+        ljmp_param.cs = next_task->cs; \
+        ljmp_param.ofs = next_task->sp;\
         __asm__ __volatile__ ( \
             __SAVE_CONTEXT__ \
             "movq %%rsp, %P[TASK_RSP](%[PREV])\n\t" \
@@ -19,8 +19,8 @@
             "ljmp *(%[LJMP_PARAM])" \
             :: [PREV] "D" (prev_task), [NEXT] "S" (next_task), \
                [TASK_RSP] "C" (offsetof(struct task, sp)), \
-               [LJMP_PARAM] "m" (&ljmp_param) \
-            : __SWITCH_CLOBBERS__ \
+               [LJMP_PARAM] "r" (&ljmp_param) \
+            \
         ); \
     } while (0)
 

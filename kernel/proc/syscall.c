@@ -1,7 +1,8 @@
+#include <attributes.h>
 #include <syscall.h>
+#include <switch.h>
 #include <task.h>
 #include <cmd.h>
-#include <switch.h>
 
 syscaddr_t syscall_table[SYSNUM_MAX + 1];
 
@@ -21,9 +22,4 @@ void syscall_add(syscaddr_t fptr)
 			break;
 		}
 	}
-}
-
-void task_switch_to(struct task *prev, struct task *next)
-{
-	switch_to(prev, next);
 }

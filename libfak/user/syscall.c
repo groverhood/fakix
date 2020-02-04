@@ -35,3 +35,17 @@ void task_sched_next(struct task *prev, struct task *next)
 {
 	sys_trap(SYS_TASK_SCHED_NEXT, int, prev, next);
 }
+
+/* === HD.H === */
+
+#include <hd.h>
+
+size_t hd_write(lbaddr_t dest, const void *src, size_t bytes)
+{
+	return sys_trap(SYS_HD_WRITE, size_t, dest, src, bytes);
+}
+
+size_t hd_read(void *dest, lbaddr_t src, size_t bytes)
+{
+	return sys_trap(SYS_HD_READ, size_t, dest, src, bytes);
+}
