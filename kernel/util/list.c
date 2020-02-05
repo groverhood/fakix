@@ -130,14 +130,19 @@ void list_insert_ordered(struct list *li, struct list_elem *el,
     li->size++;
 }
 
-void list_sort(struct list *li, list_comparator *cmp) {}
+void list_sort(struct list *li, list_comparator *cmp)
+{
+}
 
 struct list_elem *list_begin(struct list *li)
 {
     return list_empty(li) ? &li->tail : li->head.next;
 }
 
-struct list_elem *list_end(struct list *li) { return &li->tail; }
+struct list_elem *list_end(struct list *li)
+{
+    return &li->tail;
+}
 
 struct list_elem *list_worstfit(struct list *li, list_comparator *cmp)
 {

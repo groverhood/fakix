@@ -8,9 +8,10 @@
 #include <paging/table.h>
 #include <stdio.h>
 #include <syscall.h>
-#include <task.h>
+#include <proc/task.h>
 
 static void map_syscalls(void);
+static void launch_managsvr(void);
 
 int fakix_main(struct fakix_system_table *systable)
 {
@@ -20,6 +21,8 @@ int fakix_main(struct fakix_system_table *systable)
 
     map_syscalls();
 
+    launch_managsvr();
+
     return 0;
 }
 
@@ -27,7 +30,13 @@ static void map_syscalls(void)
 {
     syscall_map(SYS_CMD_SEND, conv_kern_to_sys(&cmd_send));
     syscall_map(SYS_CMD_RECV, conv_kern_to_sys(&cmd_recv));
-    syscall_map(SYS_TASK_SCHED_NEXT, conv_kern_to_sys(&task_switch_to));
     syscall_map(SYS_HD_WRITE, conv_kern_to_sys(&disk_write));
     syscall_map(SYS_HD_READ, conv_kern_to_sys(&disk_read));
+}
+
+static struct task managsvr;
+
+static void launch_managsvr(void)
+{
+
 }

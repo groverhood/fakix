@@ -3,7 +3,6 @@
 
 #include <hd.h>
 #include <stddef.h>
-#include <sys/types.h>
 
 void init_disk_driver(void);
 

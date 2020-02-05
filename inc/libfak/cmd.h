@@ -8,7 +8,7 @@
 #ifndef FAKIX_LIBFAK_CMD_H
 #define FAKIX_LIBFAK_CMD_H 1
 
-#include <sys/types.h>
+#include <svr/manag.h>
 #include <stdint.h>
 #include <sys.h>
 
@@ -26,9 +26,6 @@ typedef int cmdval_t;
 /* Descriptor of a command. */
 typedef int cmdheader_t;
 
-/* Secret to identify commands against to ensure there is no malicious IPC. */
-typedef uint64_t cmdsecret_t;
-
 /* Fixed-definition status code returned by cmd system calls. */
 typedef int cmdstat_t;
 
@@ -39,9 +36,9 @@ typedef int cmdstat_t;
 #define CMDSTAT_ERR CMDSTAT(0x01)
 
 struct command {
+	pid_t sender;
 	cmdheader_t hdr;
 	cmdval_t cmd;
-	cmdsecret_t secret;
 };
 
 cmdstat_t cmd_send(pid_t proc, const struct command *cmd);

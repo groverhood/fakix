@@ -8,13 +8,10 @@
 #include <cbl.h>
 #include <hd.h>
 
+typedef int inoderights_t;
 typedef intptr_t inode_t;
 
-struct inode_capabilities {
-
-};
-
-inode_t inode_create(const char *path, struct inode_capabilities cap);
+inode_t inode_create(const char *path, inoderights_t rights);
 size_t inode_allocate(inode_t inode, size_t bytes);
 bool inode_remove(inode_t inode);
 

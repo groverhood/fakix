@@ -27,15 +27,6 @@ cmdstat_t cmd_recv(struct command *cmd)
 	return sys_trap(SYS_CMD_RECV, cmdstat_t, cmd);
 }
 
-/* === TASK.H === */
-
-#include <task.h>
-
-void task_sched_next(struct task *prev, struct task *next)
-{
-	sys_trap(SYS_TASK_SCHED_NEXT, int, prev, next);
-}
-
 /* === HD.H === */
 
 #include <hd.h>

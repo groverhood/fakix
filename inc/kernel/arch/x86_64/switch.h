@@ -10,15 +10,18 @@
     do { \
         static packed struct { segsel_t cs; uint64_t ofs; } ljmp_param; \
         ljmp_param.cs = next_task->cs; \
-        ljmp_param.ofs = next_task->sp;\
+        ljmp_param.ofs = next_task->pc;\
         __asm__ __volatile__ ( \
             __SAVE_CONTEXT__ \
             "movq %%rsp, %P[TASK_RSP](%[PREV])\n\t" \
-            "movq %P[TASK_RSP](%[NEXT]), %rsp\n\t" \
+            "movq %P[TASK_RSP](%[NEXT]), %%rsp\n\t" \
+            "movq %P[TASK_PML4](%[NEXT]), %%rax\n\t" \
+            "movq %%rax, %%cr3\n\t" \
             __RESTORE_CONTEXT__ \
             "ljmp *(%[LJMP_PARAM])" \
             :: [PREV] "D" (prev_task), [NEXT] "S" (next_task), \
                [TASK_RSP] "C" (offsetof(struct task, sp)), \
+               [TASK_PML4] "C" (offsetof(struct task, page_table)), \
                [LJMP_PARAM] "r" (&ljmp_param) \
             \
         ); \

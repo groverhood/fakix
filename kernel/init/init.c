@@ -9,7 +9,7 @@ extern int fakix_main(struct fakix_system_table *systable);
 
 #define hang()                                                                 \
     do {                                                                       \
-        __asm__ __volatile__("nop");                                           \
+        __asm__ __volatile__("");                                              \
     } while (true)
 
 void fakix_start(void)

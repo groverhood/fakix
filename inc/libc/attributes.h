@@ -15,4 +15,6 @@
 
 #define align(X) __attribute__((aligned (X)))
 
+#define noreturn __attribute__((noreturn))
+
 #endif

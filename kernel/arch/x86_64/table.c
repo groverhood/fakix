@@ -7,6 +7,7 @@
  *      - void paging_table_set_to(pte_t *root);
  **/
 
+#include <io/interrupt.h>
 #include <paging/conv.h>
 #include <paging/table.h>
 
@@ -18,14 +19,22 @@
 #define page_level_index(addr, index)                                          \
     ((addr & P##index##_INDEX_MASK) >> (12 + 9 * (index - 1)))
 
-void paging_table_init(pte_t *kernel_root) { paging_table_set_to(kernel_root); }
+void paging_table_init(pte_t *kernel_root)
+{
+    paging_table_set_to(kernel_root);
+}
 
 void paging_table_set_to(pte_t *root)
 {
     __asm__ __volatile__("movq %[ROOT], %%cr3" ::[ROOT] "D"(root));
 }
 
-void *allocate_page_table(void) {}
+pte_t *paging_table_current(void)
+{
+    pte_t *page_table;
+    __asm__ __volatile__("movq %%cr3, %[PAGE_TABLE]" : "=r" (page_table));
+    return page_table;
+}
 
 void paging_table_map(pte_t *root, void *virtual_addr, uintptr_t phys_addr)
 {
@@ -35,4 +44,6 @@ void paging_table_map(pte_t *root, void *virtual_addr, uintptr_t phys_addr)
     pte_t *p3_table = (pte_t *)(root[p4_index] & ~0xFFF);
 }
 
-void paging_table_unmap(pte_t *root, void *virtual_addr) {}
+void paging_table_unmap(pte_t *root, void *virtual_addr)
+{
+}

@@ -322,4 +322,6 @@ size_t ahci_disk_read(void *dest, lbaddr_t src, size_t bytes)
     return bytes_read;
 }
 
-size_t ahci_disk_write(lbaddr_t dest, const void *src, size_t bytes) {}
+size_t ahci_disk_write(lbaddr_t dest, const void *src, size_t bytes)
+{
+}

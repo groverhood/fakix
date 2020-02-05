@@ -4,7 +4,7 @@
 #include <hd.h>
 #include <stddef.h>
 #include <io/dev.h>
-#include <sys/types.h>
+
 
 void init_ahci_driver(struct fakix_device *dev);
 

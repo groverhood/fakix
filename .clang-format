@@ -9,3 +9,5 @@ IncludeBlocks: Merge
 PointerAlignment: Right
 SpaceBeforeParens: ControlStatements
 UseTab: Never
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false

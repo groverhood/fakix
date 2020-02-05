@@ -45,7 +45,10 @@ struct bitmap *bitmap_create_buffer(size_t bits, void *buf, size_t size)
     return b;
 }
 
-size_t bitmap_size(struct bitmap *bmap) { return bmap->bitcount; }
+size_t bitmap_size(struct bitmap *bmap)
+{
+    return bmap->bitcount;
+}
 
 static inline bool bitmap_test(struct bitmap *bm, size_t bit_index)
 {

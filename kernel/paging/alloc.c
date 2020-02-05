@@ -91,7 +91,10 @@ void page_free_multiple(void *pagebase, int size, size_t npages)
     }
 }
 
-void page_free(void *page, int size) { page_free_multiple(page, size, 1); }
+void page_free(void *page, int size)
+{
+    page_free_multiple(page, size, 1);
+}
 
 static bool overlapping_regions(struct fakix_memmap *map1,
                                 struct fakix_memmap *map2)

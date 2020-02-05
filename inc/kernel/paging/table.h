@@ -16,6 +16,9 @@ void paging_table_init(pte_t *kernel_root);
  *      table, so FAKIX will just let itself GP fault.
  **/
 void paging_table_set_to(pte_t *root);
+pte_t *paging_table_current(void);
+
+uintptr_t paging_table_get_mapping(pte_t *root, void *virtual_addr);
 
 void paging_table_map(pte_t *root, void *virtual_addr, uintptr_t phys_addr);
 void paging_table_unmap(pte_t *root, void *virtual_addr);

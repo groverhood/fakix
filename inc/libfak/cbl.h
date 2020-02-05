@@ -22,10 +22,12 @@
 #define FAKIX_LIBFAK_CBL_H 1
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef uintptr_t capaddr_t;
 typedef intptr_t capslot_t;
 typedef int caprights_t;
+typedef int caperr_t;
 
 #define CAPRIGHT_WRITE (0x01)
 #define CAPRIGHT_READ  (0x02)
@@ -46,7 +48,7 @@ enum cap_object_type {
 
 struct cnode {
 	capaddr_t addr; /* [0:3]: L2 index
-	                   [4:31]: L2 physical address (4K aligned) */
+	                   [4:63]: L2 physical address (4K aligned) */
 	capslot_t slot; /* L1 index. */
 };
 
@@ -56,8 +58,9 @@ struct capability {
 	caprights_t rights; /* Access rights. */
 };
 
-int cbl_create_cnode(struct capability *out_cap, struct cnode *out_cnode);
-int cbl_create_cap(struct capability dest, enum cap_object_type type, 
+caperr_t cbl_create_cnode(struct capability *out_cap, struct cnode *out_cnode);
+caperr_t cbl_create_cap(struct capability dest, enum cap_object_type type, 
 					caprights_t rights, size_t bytes);
+caperr_t cbl_retype_cap(struct capability dest, enum cap_object_type newtype);
 
 #endif

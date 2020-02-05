@@ -1,64 +1,119 @@
-#include <io/interrupt.h>
+#include <apic.h>
 #include <attributes.h>
+#include <io/interrupt.h>
+#include <paging/conv.h>
+#include <proc/timer.h>
+#include <util/panic.h>
 #include <stdint.h>
 
-packed align(16) struct apic_register {
-    uint32_t value;
-    uint32_t pad[3];
-};
+#define IA32_APIC_BASE_MSR 0x1B
+#define IA32_APIC_BASE_MSR_BSP (1 << 8)
+#define IA32_APIC_BASE_MSR_ENABLE (1 << 11)
 
-#define LAPIC_BASE ((struct apic_register *)conv_phys_to_kern(0xFEE00000))
-#define LAPIC_REGISTER(X) (&(LAPIC_BASE + (X / sizeof *LAPIC_BASE))->value)
-
-#define LAPIC_ID_REGISTER LAPIC_REGISTER(0x0020)
-#define LAPIC_VERSION_REGISTER LAPIC_REGISTER(0x0030)
-#define LAPIC_TASK_PRIORITY_REGISTER LAPIC_REGISTER(0x0080)
-#define LAPIC_ARBITRATION_PRIORITY_REGISTER LAPIC_REGISTER(0x0090)
-#define LAPIC_PROCESSOR_PRIORITY_REGISTER LAPIC_REGISTER(0x00A0)
-#define LAPIC_EOI_REGISTER LAPIC_REGISTER(0x00B0)
-#define LAPIC_REMOTE_READ_REGISTER LAPIC_REGISTER(0x00C0)
-#define LAPIC_LOGICAL_DESTINATION_REGISTER LAPIC_REGISTER(0x00D0)
-#define LAPIC_DESTINATION_FORMAT_REGISTER LAPIC_REGISTER(0x00E0)
-#define LAPIC_SPIRV_REGISTER LAPIC_REGISTER(0x00F0)
-#define LAPIC_IN_SERVICE_REGISTER_31_0 LAPIC_REGISTER(0x0100)
-#define LAPIC_IN_SERVICE_REGISTER_63_32 LAPIC_REGISTER(0x0110)
-#define LAPIC_IN_SERVICE_REGISTER_95_64 LAPIC_REGISTER(0x0120)
-#define LAPIC_IN_SERVICE_REGISTER_127_96 LAPIC_REGISTER(0x0130)
-#define LAPIC_IN_SERVICE_REGISTER_159_128 LAPIC_REGISTER(0x0140)
-#define LAPIC_IN_SERVICE_REGISTER_191_160 LAPIC_REGISTER(0x0150)
-#define LAPIC_IN_SERVICE_REGISTER_223_192 LAPIC_REGISTER(0x0160)
-#define LAPIC_IN_SERVICE_REGISTER_255_224 LAPIC_REGISTER(0x0170)
-#define LAPIC_TRIGGER_MODE_REGISTER_31_0 LAPIC_REGISTER(0x0180)
-#define LAPIC_TRIGGER_MODE_REGISTER_63_32 LAPIC_REGISTER(0x0190)
-#define LAPIC_TRIGGER_MODE_REGISTER_95_64 LAPIC_REGISTER(0x01A0)
-#define LAPIC_TRIGGER_MODE_REGISTER_127_96 LAPIC_REGISTER(0x01B0)
-#define LAPIC_TRIGGER_MODE_REGISTER_159_128 LAPIC_REGISTER(0x01C0)
-#define LAPIC_TRIGGER_MODE_REGISTER_191_160 LAPIC_REGISTER(0x01D0)
-#define LAPIC_TRIGGER_MODE_REGISTER_223_192 LAPIC_REGISTER(0x01E0)
-#define LAPIC_TRIGGER_MODE_REGISTER_255_224 LAPIC_REGISTER(0x01F0)
-#define LAPIC_IN_SERVICE_REGISTER_31_0 LAPIC_REGISTER(0x0200)
-#define LAPIC_IN_SERVICE_REGISTER_63_32 LAPIC_REGISTER(0x0210)
-#define LAPIC_IN_SERVICE_REGISTER_95_64 LAPIC_REGISTER(0x0220)
-#define LAPIC_IN_SERVICE_REGISTER_127_96 LAPIC_REGISTER(0x0230)
-#define LAPIC_IN_SERVICE_REGISTER_159_128 LAPIC_REGISTER(0x0240)
-#define LAPIC_IN_SERVICE_REGISTER_191_160 LAPIC_REGISTER(0x0250)
-#define LAPIC_IN_SERVICE_REGISTER_223_192 LAPIC_REGISTER(0x0260)
-#define LAPIC_IN_SERVICE_REGISTER_255_224 LAPIC_REGISTER(0x0270)
-#define LAPIC_ERROR_STATUS_REGISTER LAPIC_REGISTER(0x0280)
-#define LAPIC_LVT_CMCI_REGISTER LAPIC_REGISTER(0x02F0)
-#define LAPIC_INTERRUPT_CMD_REGISTER_31_0 LAPIC_REGISTER(0x0300)
-#define LAPIC_INTERRUPT_CMD_REGISTER_63_32 LAPIC_REGISTER(0x0310)
-#define LAPIC_LVT_TIMER_REGISTER LAPIC_REGISTER(0x0320)
-#define LAPIC_LVT_THERMAL_SENSOR_REGISTER LAPIC_REGISTER(0x0330)
-#define LAPIC_LVT_PERFORMANCE_MONITORING_COUNTERS_REGISTER LAPIC_REGISTER(0x340)
-#define LAPIC_LVT_LINT0_REGISTER LAPIC_REGISTER(0x0350)
-#define LAPIC_LVT_LINT1_REGISTER LAPIC_REGISTER(0x0360)
-#define LAPIC_LVT_ERROR_REGISTER LAPIC_REGISTER(0x0370)
-#define LAPIC_INITIAL_COUNT_REGISTER LAPIC_REGISTER(0x0380)
-#define LAPIC_CURRENT_COUNT_REGISTER_LAPIC_REGISTER(0x0390)
-#define LAPIC_DIVIDE_CONFIGURATION_REGISTER LAPIC_REGISTER(0x03E0)
+static void interrupt_init_idt(void);
 
 void interrupt_init(void)
 {
-    
+    interrupt_init_idt();
+
+    /* Enable the Local APIC. */
+
+    uint64_t ia32_apic_base_msr;
+    __asm__ volatile("rdmsr\n\t"
+                     "orq %%rdx, %0"
+                     : "=a"(ia32_apic_base_msr)
+                     : "c"(IA32_APIC_BASE_MSR)
+                     : "rdx");
+
+    ia32_apic_base_msr |= (IA32_APIC_BASE_MSR_BSP | IA32_APIC_BASE_MSR_ENABLE);
+
+    __asm__ volatile("wrmsr"
+                     :
+                     : "a"(ia32_apic_base_msr), "d"(ia32_apic_base_msr >> 32),
+                       "c"(IA32_APIC_BASE_MSR));
+}
+
+packed struct idt_pointer {
+    uint16_t limit; /* Length of IDT in bytes - 1. */
+    uint64_t base;  /* Physical address of the IDT. */
+};
+
+packed struct idt_descriptor {
+    uint16_t ofs_15_0;
+    uint16_t cs_selector;
+    uint8_t rsvd0;
+    uint8_t type_attr;
+    uint16_t ofs_31_16;
+    uint32_t ofs_63_32;
+    uint32_t rsvd1;
+};
+
+/* Align the IDT to a page boundary so we can describe it with capabilities. */
+align(FAKIX_PAGE) struct idt_descriptor idt[INTRCODE_MAX + 1];
+
+static interrupt_handler_t div_error_handler;
+static interrupt_handler_t invalid_opcode_handler;
+static interrupt_handler_t double_fault_handler;
+static interrupt_handler_t gp_fault_handler;
+
+static void interrupt_init_idt(void)
+{
+    interrupt_set_handler(INTRCODE_DIVIDE_ERROR, &div_error_handler);
+    interrupt_set_handler(INTRCODE_INVALID_OPCODE, &invalid_opcode_handler);
+    interrupt_set_handler(INTRCODE_DOUBLE_FAULT, &double_fault_handler);
+    interrupt_set_handler(INTRCODE_GENERAL_PROTECTION_FAULT, &gp_fault_handler);
+
+    struct idt_pointer idtp = {.limit = sizeof idt + 1, (uintptr_t)idt};
+
+    __asm__ volatile("lidt (%[IDTP])" ::[IDTP] "r"(&idtp));
+}
+
+void interrupt_set_handler(intrcode_t intr, interrupt_handler_t *handler)
+{
+    struct idt_descriptor *idt_desc = (idt + intr);
+    uintptr_t handler_paddr = conv_kern_to_phys(handler);
+
+    idt_desc->ofs_15_0 = (uint16_t)(handler_paddr);
+    idt_desc->ofs_31_16 = (uint16_t)(handler_paddr >> 16);
+    idt_desc->ofs_63_32 = (uint32_t)(handler_paddr >> 32);
+    idt_desc->cs_selector = 8;
+    idt_desc->type_attr = 0x8E;
+}
+
+void div_error_handler(struct interrupt_state *intr_state)
+{
+    panic("DIV error");
+    ireturn;
+}
+
+void invalid_opcode_handler(struct interrupt_state *intr_state)
+{
+    panic("Invalid opcode");
+    ireturn;
+}
+
+void double_fault_handler(struct interrupt_state *intr_state)
+{
+    panic("Double Fault");
+    ireturn;
+}
+
+void gp_fault_handler(struct interrupt_state *intr_state)
+{
+    panic("GP Fault");
+    ireturn;
+}
+
+void timer_init(void)
+{
+    __asm__ volatile("outb %%al, %%dx" ::"d"(0x21), "a"(0xFF));
+    __asm__ volatile("outb %%al, %%dx" ::"d"(0x91), "a"(0xFF));
+
+    *LAPIC_SPIRV_REGISTER &= ~0xFF;
+    *LAPIC_SPIRV_REGISTER |= INTRCODE_SPIRV_INTERRUPT;
+
+    *LAPIC_LVT_TIMER_REGISTER &= ~0xFF;
+    *LAPIC_LVT_TIMER_REGISTER |= INTRCODE_TIMER_INTERRUPT;
+
+    interrupt_set_handler(INTRCODE_TIMER_INTERRUPT, &timer_handler);
 }
