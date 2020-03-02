@@ -24,7 +24,7 @@ endif
 CROSS = $(PWD)/cross/bin
 
 CC = $(CROSS)/$(PREFIX)-gcc -c
-CFLAGS = -O2 -mgeneral-regs-only -mno-red-zone -D__FAKIX__ -DARCH_$(ARCH) $(addprefix -I,$(INCS))
+CFLAGS = -O2 -mno-red-zone -D__FAKIX__ -DARCH_$(ARCH) $(addprefix -I,$(INCS)) -Werror
 LD = $(CROSS)/$(PREFIX)-ld
 LFLAGS = -nostdlib -A $(ARCH)
 AS = $(CROSS)/$(PREFIX)-as

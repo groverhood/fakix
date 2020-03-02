@@ -3,16 +3,11 @@ include ./Make.defaults
 all:
 	make -C boot
 	make -C kernel
-
-	tools/genfs -o root $(GENFS_MAPPINGS)
-	tools/mkusr -r root \
-		-k kernel/kernel.bin \
-		-b boot/boot.bin \
-		-l boot/loader.img \
-		-o boot/fakix.img
+	make -C lib
+	
 
 format:
-	find boot kernel libc \( -name "*.h" -o -name "*.c" \) | xargs clang-format -i
+	find boot kernel lib \( -name "*.h" -o -name "*.c" \) | xargs clang-format -i
 
 # -device ioh3420,id=root_port1,chassis=0,slot=0,bus=pcie.0 \
 # -device ahci,bus=root_port1,id=ahci \

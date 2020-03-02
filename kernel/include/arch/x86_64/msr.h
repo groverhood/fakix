@@ -1,0 +1,6 @@
+#ifndef KERNEL_ARCH_X86_64_MSR_H
+#define KERNEL_ARCH_X86_64_MSR_H 1
+
+#define IA32_EFER_MSR 0xC0000080
+
+#endif
