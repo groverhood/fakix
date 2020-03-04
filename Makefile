@@ -1,10 +1,15 @@
 include ./Make.defaults
 
-all:
+all: tools headers
 	make -C boot
 	make -C kernel
 	make -C lib
 	
+tools:
+	guild compile tools/generror.scm
+
+headers:
+	tools/generror.scm errors/errors.scm > include/fakix/errors.h
 
 format:
 	find boot kernel lib \( -name "*.h" -o -name "*.c" \) | xargs clang-format -i

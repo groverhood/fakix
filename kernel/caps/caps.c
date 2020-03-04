@@ -1,5 +1,6 @@
 #include <cap/caps.h>
 #include <util/arith.h>
+#include <fakix/errtype.h>
 
 errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret_cap)
 {
@@ -12,8 +13,9 @@ errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret
     ret_cap->base = (paddr_t)table - VSPACE_KERN_BASE;
     ret_cap->objtype = CAP_OBJECT_L1;
     ret_cap->size = buflen;
+    ret_cap->rights = CAP_RIGHTS_RDWR;
     
-    return 0;
+    return ERR_OK;
 }
 
 static errval_t cap_retype_physical(struct capability *dest, struct capability *src, 
@@ -22,18 +24,21 @@ static errval_t cap_retype_physical(struct capability *dest, struct capability *
     dest->base = src->base + offset;
     dest->size = size;
     dest->objtype = objtype;
+    dest->rights = src->rights;
+    return ERR_OK;
 }
 
 static errval_t cap_retype_ram(struct capability *dest, struct capability *src, 
                      enum cap_object_type objtype, size_t size, ptrdiff_t offset)
 {
-    errval_t err = 0;
+    errval_t err = ERR_OK;
     if (objtype == CAP_OBJECT_DEVICE) {
-        err = 1;
+        err = CAP_ERR_RETYPE_SIBLING;
     } else {
         dest->base = src->base + offset;
         dest->size = size;
         dest->objtype = objtype;
+        dest->rights = src->rights;
     }
 
     return err;
@@ -42,16 +47,17 @@ static errval_t cap_retype_ram(struct capability *dest, struct capability *src,
 static errval_t cap_retype_frame(struct capability *dest, struct capability *src, 
                      enum cap_object_type objtype, size_t size, ptrdiff_t offset)
 {
-    errval_t err = 0;
+    errval_t err = ERR_OK;
     switch (objtype) {
-        case CAP_OBJECT_DEVICE:
+        case CAP_OBJECT_DEVICE: 
         case CAP_OBJECT_RAM: {
-            err = 1;
+            err = CAP_ERR_RETYPE_SUPER;
         } break;
         default: {
             dest->base = src->base + offset;
             dest->size = size;
             dest->objtype = objtype;
+            dest->rights = src->rights;
         }
     }
     return err;
@@ -62,9 +68,9 @@ errval_t caps_retype(struct capability *dest, struct capability *src,
 {
     errval_t err = 0;
     if (offset < 0) {
-        err = 1;
+        err = CAP_ERR_NEGATIVE_OFFSET;
     } else if (size > src->size) {
-        err = 1;
+        err = CAP_ERR_RETYPE_TOO_SMALL;
     } else {
         size = divide_round_up(size, VSPACE_BASE_PAGE_SIZE);
         offset = divide_round_up(offset, VSPACE_BASE_PAGE_SIZE);
@@ -79,7 +85,7 @@ errval_t caps_retype(struct capability *dest, struct capability *src,
                 err = cap_retype_frame(dest, src, objtype, size, offset); 
             } break;
             default: {
-                err = 1;
+                err = CAP_ERR_INVALID_TYPE_OPERATION;
             }
         }
     }
@@ -92,7 +98,8 @@ errval_t caps_copy(struct capability *dest, struct capability *src)
     dest->base = src->base;
     dest->size = src->size;
     dest->objtype = src->objtype;
-    return 0;
+    dest->rights = src->rights;
+    return ERR_OK;
 }
 
 errval_t caps_destroy(struct capability *dest)
@@ -100,33 +107,34 @@ errval_t caps_destroy(struct capability *dest)
     dest->base = 0;
     dest->size = 0;
     dest->objtype = CAP_OBJECT_NULL;
-    return 0;
+    dest->rights = 0;
+    return ERR_OK;
 }
 
 errval_t caps_lookup_cap(struct capability *cnode, capaddr_t caddr, struct capability **ret_cap)
 {
-    errval_t err = 0;
+    errval_t err = ERR_OK;
     struct capability **caps = (struct capability **)(cnode->base + VSPACE_KERN_BASE);
     if (cnode->objtype == CAP_OBJECT_L1) {
         *ret_cap = caps[CAP_L1_OFFSET(caddr)];
     } else if (cnode->objtype == CAP_OBJECT_L2) {
         *ret_cap = caps[CAP_L2_OFFSET(caddr)];
     } else {
-        err = 1;
+        err = CAP_ERR_INVALID_TYPE_OPERATION;
     }
     return err;
 }
 
 errval_t caps_write_cap(struct capability *cnode, capaddr_t caddr, struct capability *cap)
 {
-    errval_t err = 0;
+    errval_t err = ERR_OK;
     struct capability **caps = (struct capability **)(cnode->base + VSPACE_KERN_BASE);
     if (cnode->objtype == CAP_OBJECT_L1) {
         caps[CAP_L1_OFFSET(caddr)] = cap;
     } else if (cnode->objtype == CAP_OBJECT_L2) {
         caps[CAP_L2_OFFSET(caddr)] = cap;
     } else {
-        err = 1;
+        err = CAP_ERR_INVALID_TYPE_OPERATION;
     }
     return err;
 }
