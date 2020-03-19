@@ -19,7 +19,7 @@ include $(PWD)/Make.defaults
 	$(CC) $(CFLAGS) -o $@ $<
 
 %.o: %.$(ASEXT)
-	$(AS) $(AFLAGS) -o $@ $<
+	$(CPP) $(CPPFLAGS) $< | $(AS) $(AFLAGS) -o $@
 
 # *.generated.ld rules must be manually specified as dependencies
 %.generated.ld: %.ld

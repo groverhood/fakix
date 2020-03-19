@@ -4,6 +4,8 @@
 /* Use this with architecture-specific structures. */
 #define packed __attribute__((packed))
 
+#define section(S) __attribute__((section (S)))
+
 /* Attach this macro to any function that you don't intend on implementing in
    the kernel. */
 #ifdef __FAKIX_KERNEL__

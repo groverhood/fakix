@@ -1,0 +1,6 @@
+#ifndef ARCH_X86_64_ELF_FORMAT_H
+#define ARCH_X86_64_ELF_FORMAT_H
+
+#define ELF64_FORMAT elf64-x86-64
+
+#endif

@@ -25,6 +25,11 @@ packed struct gdt_descriptor {
 
 #define GDT_FLAGS_CODE_64 0x20
 
+#define GDT_KERNEL_CODE_SEL 0x08
+#define GDT_KERNEL_DATA_SEL 0x10
+#define GDT_USER_CODE_SEL 0x18
+#define GDT_USER_DATA_SEL 0x20
+
 #define GDT_KERNEL_CODE_64 ((struct gdt_descriptor){ \
         .access = GDT_SEGMENT_PRESENT | GDT_PRIVILEGE_RING0 | GDT_TYPE_CODE_READ,\
         .flags = GDT_FLAGS_CODE_64 \

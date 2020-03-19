@@ -3,8 +3,6 @@
 #include <fakix/init/ramcaps.h>
 #include <fakix/ram.h>
 
-#include "mm.h"
-
 /**
  *  argv[0] = "/sbin/init"
  * 
@@ -12,5 +10,8 @@
  **/
 int main(int argc, char *argv[])
 {
-    mm_init();
+    
+    while (1) {
+        asm("");
+    }
 }

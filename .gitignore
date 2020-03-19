@@ -1,6 +1,11 @@
 build
 cross
 root 
+boot/image/sbin/*
+!boot/image/sbin/.keep
+
+__pycache__
+pyke
 
 .vscode
 
@@ -9,3 +14,4 @@ root
 *.bin
 *.generated.*
 *.img
+*.dump

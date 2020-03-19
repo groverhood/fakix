@@ -11,9 +11,8 @@
 #	- CPPFLAGS
 #	- ARCH
 
-ifeq ($(ARCH),)
-  ARCH = $(shell uname -m)
-endif
+
+ARCH := $(if $(ARCH),$(ARCH),$(shell uname -m))
 
 ifeq ($(ARCH),x86_64)
   ASEXT = s
@@ -26,8 +25,9 @@ CROSS = $(PWD)/cross/bin
 CC = $(CROSS)/$(PREFIX)-gcc -c
 CFLAGS = -O2 -mno-red-zone -D__FAKIX__ -DARCH_$(ARCH) $(addprefix -I,$(INCS)) -Werror
 LD = $(CROSS)/$(PREFIX)-ld
-LFLAGS = -nostdlib -A $(ARCH)
+LFLAGS = -nostdlib -r
 AS = $(CROSS)/$(PREFIX)-as
 AFLAGS = $(addprefix -I,$(INCS))
 CPP = $(CROSS)/$(PREFIX)-cpp
-CPPFLAGS = $(addprefix -I,$(INCS)) -x c
+CPPFLAGS = $(addprefix -I,$(INCS))
+PY = python3 -m py_compile

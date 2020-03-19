@@ -1,7 +1,7 @@
-1. Implement device drivers:
+1. Fix linker hug of death (or, how to refer to addresses in my symbol table)
+2. Implement device drivers:
 	a. AHCI
 	b. APIC
-2. Build the skeleton for userland programs:
-	a. Implement commands.
-	b. Define symbols exposed in procst.h
-	c. Implement servers (memory, scheduling, inode)
+3. Build the skeleton for userland programs:
+	a. Implement IPC.
+	b. Implement server

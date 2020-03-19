@@ -1,9 +1,9 @@
 #ifndef FAKIX_VSPACE_H
 #define FAKIX_VSPACE_H 1
 
-#define VSPACE_WORD_SIZE ((size_t)((void **)0 + 1))
+#define VSPACE_WORD_SIZE (8)
 #define VSPACE_BASE_PAGE_SIZE 0x1000
-#define VSPACE_PAGE_OFFSET_MASK(n) ((~(-((size_t)1 << (n)))))
+#define VSPACE_PAGE_OFFSET_MASK(n) ((~(-(1ULL << (n)))))
 #define VSPACE_EXPECTED_PAGE_BITS 9
 #define VSPACE_EXPECTED_OFFSET_BITS 12
 #define VSPACE_TABLE_OFFSET_ZI(a, l, n, o) (((a) & ((VSPACE_PAGE_OFFSET_MASK(n) << ((l) * (n) + (o))))) >> ((l) * (n) + (o)))
@@ -13,5 +13,6 @@
 #define VSPACE_KERN_BASE 0xffff800000000000
 #define VSPACE_KERN_START (VSPACE_KERN_BASE + VSPACE_KERN_OFFSET)
 #define VSPACE_PAGE_ALIGN align(VSPACE_BASE_PAGE_SIZE)
+#define VSPACE_GAP_TOP 0x40000000
 
 #endif

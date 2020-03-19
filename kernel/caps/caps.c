@@ -18,6 +18,29 @@ errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret
     return ERR_OK;
 }
 
+errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *l1_cnode_cap,
+                              capslot_t slot, struct capability *ret_cap)
+{
+    errval_t err = ERR_OK;
+    struct capability **l2_caps = (struct capability **)(l1_cnode_cap->base + VSPACE_KERN_BASE);
+    if (l2_caps[slot] != NULL) {
+        err = CAP_ERR_WRITE_ALLOCATED_CAP;
+    } else {
+        l2_caps[slot] = ret_cap;
+        struct capability **caps = table;
+        size_t i;
+        for (i = 0; i < VSPACE_BASE_PAGE_SIZE / sizeof *caps; ++i) {
+            caps[i] = NULL;
+        }
+
+        ret_cap->base = (paddr_t)table - VSPACE_KERN_BASE;
+        ret_cap->objtype = CAP_OBJECT_L2;
+        ret_cap->size = buflen;
+        ret_cap->rights = CAP_RIGHTS_RDWR;
+    }
+    return err;
+}
+
 static errval_t cap_retype_physical(struct capability *dest, struct capability *src, 
                      enum cap_object_type objtype, size_t size, ptrdiff_t offset)
 {

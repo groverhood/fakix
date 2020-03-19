@@ -46,7 +46,7 @@ union registers {
         regval_t rsvd5;
         regval_t rsvd6;
         regval_t rsvd7;
-    };
+    } syscall_args;
 };
 
 

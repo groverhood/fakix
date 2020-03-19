@@ -1,5 +1,5 @@
 #ifndef KERNEL_CAP_CAPS_H
-#define KERNEL_CAP_CAPS_H
+#define KERNEL_CAP_CAPS_H 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -7,15 +7,15 @@
 #include <fakix/tcb.h>
 
 struct capability {
-    paddr_t base;
-    size_t size;
     enum cap_object_type objtype;
     caprights_t rights;
+    paddr_t base;
+    size_t size;
 };
 
 errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret_cap);
 
-errval_t caps_create_l2_cnode(void *table, size_t buflem, struct capability *l1_cnode_cap,
+errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *l1_cnode_cap,
                               capslot_t slot, struct capability *ret_cap);
 
 errval_t caps_retype(struct capability *dest, struct capability *src, 

@@ -48,6 +48,7 @@ struct paging_state {
 
 errval_t paging_init_state(struct paging_state *st, vaddr_t start_addr,
                            capaddr_t pagedir, cnode_t l1);
+                           
 errval_t paging_alloc(struct paging_state *st, size_t size, void **ret_addr);
 errval_t paging_map_frame(struct paging_state *st, capaddr_t frame, 
                           paging_flags_t flags, void **ret_addr);

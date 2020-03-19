@@ -1,9 +1,12 @@
 include ./Make.defaults
+include ./Make.rules
 
 all: tools headers
-	make -C boot
 	make -C kernel
 	make -C lib
+	make -C sbin
+
+	cp kernel/kernel.bin boot/image/sbin/boot
 	
 tools:
 	guild compile tools/generror.scm
@@ -19,7 +22,7 @@ format:
 
 run:
 	qemu-system-$(ARCH) \
-		-drive id=fakixdisk,file=boot/fakix.img,index=0,media=disk,format=raw \
+		-cdrom test.img\
 		-nographic \
 		-s -S \
 		-monitor telnet::45454,server,nowait \
@@ -28,11 +31,11 @@ run:
 		-M q35
 
 clean:
-	find boot kernel libc \( \
+	find boot kernel lib sbin \( \
 	    -name "*.o" \
 	    -o -name "*.generated.*" \
 	    -o -name "*.bin" \
 	    -o -name "*.img" \
 	\) -a -delete
-	rm -rf root
-	rm -f fakix.img
+	rm -rf boot/image/sbin/*
+	touch boot/image/sbin/.keep

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <fakix/addr.h>
+#include <fakix/vspace.h>
 
 /* Address in process's CSpace. */
 typedef uint32_t capaddr_t;
@@ -18,10 +19,10 @@ typedef vaddr_t cnode_t;
 #define CAP_L1_BITS 9
 #define CAP_L2_BITS 9
 
-#define CAP_L2_OFFSET_MASK PAGE_OFFSET_MASK(CAP_L2_BITS)
+#define CAP_L2_OFFSET_MASK VSPACE_PAGE_OFFSET_MASK(CAP_L2_BITS)
 #define CAP_L2_OFFSET(caddr) ((caddr) & CAP_L2_OFFSET_MASK)
 
-#define CAP_L1_OFFSET_MASK PAGE_OFFSET_MASK(CAP_L1_BITS)
+#define CAP_L1_OFFSET_MASK VSPACE_PAGE_OFFSET_MASK(CAP_L1_BITS)
 #define CAP_L1_OFFSET(caddr) (((caddr) >> CAP_L2_BITS) & CAP_L1_OFFSET_MASK) 
 
 #define CAP_ADDR(cnode, slot) ((capaddr_t)(((cnode) << CAP_L2_BITS) | (slot)))
