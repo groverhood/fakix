@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <attributes.h>
 
-packed struct int_arch_frame {
+struct packed int_arch_frame {
     uint64_t error;
     uint64_t rip;
     uint64_t cs;

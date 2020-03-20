@@ -6,8 +6,8 @@ ENTRY(_start)
 SECTIONS
 {
     . = VSPACE_KERN_OFFSET;
-    .start ALIGN(4K) : AT(VSPACE_KERN_OFFSET) {
-        *(.multiboot);
+    .start ALIGN(4K) : {
+        KEEP(*(.multiboot));
         *(.start);
         *(.start.*);
     }

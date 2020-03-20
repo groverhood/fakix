@@ -6,7 +6,8 @@ all: tools headers
 	make -C lib
 	make -C sbin
 
-	cp kernel/kernel.bin boot/image/sbin/boot
+	objcopy -O binary kernel/kernel.bin boot/image/sbin/boot
+	grub-mkrescue /usr/lib/grub/i386-pc -o test.img boot/image
 	
 tools:
 	guild compile tools/generror.scm

@@ -13,7 +13,7 @@ typedef int ivec_t;
 typedef uint8_t ist_ring_t;
 typedef uint8_t idt_ent_attr_t;
 
-packed struct idt_ent {
+struct packed idt_ent {
     uint16_t offset_15_0;
     uint16_t cs_selector;
     ist_ring_t ist;

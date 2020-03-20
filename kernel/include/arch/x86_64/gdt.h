@@ -5,7 +5,7 @@
 #include <fakix/addr.h>
 #include <stdint.h>
 
-packed struct gdt_descriptor {
+struct packed gdt_descriptor {
     uint8_t unused0[5]; /* Unused when paging is enabled. */
     uint8_t access;
     uint8_t flags;
@@ -52,12 +52,12 @@ packed struct gdt_descriptor {
 
 #define GDT_NENTS 4
 
-packed struct gdt {
+struct packed gdt {
     struct gdt_descriptor null_sel;
     struct gdt_descriptor descriptors[GDT_NENTS];
 };
 
-packed struct gdt_pointer {
+struct packed gdt_pointer {
     uint16_t size;
     paddr_t gdt_addr;
 };

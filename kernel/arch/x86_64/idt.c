@@ -6,7 +6,7 @@
 
 static uint8_t idt_cap_buffer[VSPACE_BASE_PAGE_SIZE * 2];
 
-packed struct idt_pointer { 
+struct packed idt_pointer { 
     uint16_t length;
     uint64_t base;
 };
@@ -39,7 +39,7 @@ void isr_common_stub(ivec_t ivec)
     ireturn();
 }
 
-struct idt_pointer idtp asm("idtp") = {
+static struct idt_pointer idtp asm("idtp") = {
     .length = VSPACE_BASE_PAGE_SIZE - 1,
     .base = (paddr_t)idt_cap_buffer - VSPACE_KERN_BASE + VSPACE_BASE_PAGE_SIZE
 };
@@ -51,7 +51,7 @@ errval_t idt_init(struct capability *ret_cap)
     ret_cap->rights = CAP_RIGHTS_RDWR;
     ret_cap->size = VSPACE_BASE_PAGE_SIZE * 2;
     
-    asm volatile("lidt (idtp)\n");
+    asm volatile("lidt (%0)\n" :: "r" (&idtp));
 
     return ERR_OK;
 }

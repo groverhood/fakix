@@ -11,3 +11,4 @@ OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.$(ASEXT)=.o)
 
 all: fakix_link.generated.ld kernel.bin
+

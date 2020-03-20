@@ -70,7 +70,7 @@ void local_init(multiboot_uint32_t magic, struct multiboot_info *boot_info)
     setup_default_idt(idt_cap);
 
     struct capability *vspace_root_cap = init_alloc_cap_copy(
-        .base = (paddr_t)init_pml4_table - VSPACE_KERN_BASE,
+        .base = (paddr_t)init_pml4_table,
         .size = VSPACE_BASE_PAGE_SIZE,
         .objtype = CAP_OBJECT_VTL1,
         .rights = CAP_RIGHTS_RDWR
@@ -79,7 +79,7 @@ void local_init(multiboot_uint32_t magic, struct multiboot_info *boot_info)
     caps_write_cap(task_cnode, CAP_PAGE_VTL1, vspace_root_cap);
 
     struct capability *kernel_l2_cap = init_alloc_cap_copy(
-        .base = (paddr_t)init_pdp_table - VSPACE_KERN_BASE,
+        .base = (paddr_t)init_pdp_table,
         .size = VSPACE_BASE_PAGE_SIZE,
         .objtype = CAP_OBJECT_VTL2,
         .rights = CAP_RIGHTS_READ
