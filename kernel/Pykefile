@@ -1,0 +1,17 @@
+[
+    {
+        'target': 'cpu_driver_x64',
+        'build': 'application',
+        'output': 'binary',
+        'arch': 'x86_64',
+        'destination': '/sbin/cpu_driver',
+        'includes': ['include', '{workspace_root}/include'],
+        'c_files': ['caps/caps.c', 'core/core.c', 'arch/x86_64/boot.c',
+                    'arch/x86_64/coreid.c', 'arch/x86_64/idt.c',
+                    'arch/x86_64/init.c', 'arch/x86_64/upcall.c'],
+        's_files': ['arch/x86_64/multiboot.s'],
+        'c_flags': ['-O2', '-mno-red-zone'],
+        'l_file': 'fakix_link.ld',
+        'l_flags': ['--no-relax']
+    }
+]

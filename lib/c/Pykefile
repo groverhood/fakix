@@ -1,0 +1,9 @@
+[
+    {
+        'target': 'libc_x64',
+        'arch': 'x86_64',
+        'build': 'object',
+        'includes': ['{workspace_root}/include', '{workspace_root}/include/arch/x86_64'],
+        'c_files': ['string.c', 'xprintf.c', 'arch/x86_64/crt0.c']
+    }
+]

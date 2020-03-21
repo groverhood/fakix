@@ -12,6 +12,8 @@
 #include <gdt.h>
 #include <msr.h>
 
+/* Physical address. */
+
 extern size_t init_pdp_table[VSPACE_TABLE_ENTRIES];
 extern size_t init_pml4_table[VSPACE_TABLE_ENTRIES];
 
@@ -116,7 +118,7 @@ static void apic_init(void)
 
 }
 
-static  int apic_timer_init(void)
+static int apic_timer_init(void)
 {
 
 }

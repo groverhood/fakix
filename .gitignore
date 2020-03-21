@@ -5,7 +5,6 @@ boot/image/sbin/*
 !boot/image/sbin/.keep
 
 __pycache__
-pyke
 
 .vscode
 
