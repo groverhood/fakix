@@ -40,5 +40,5 @@ class MakeRule(object):
     def __str__(self):
         if self.str is None:
             self.str = (self.target + ': ' + ' '.join(self.deps) + 
-                '\n\t' + '\n\t'.join(self.body))
+                        '\n\t' + ('\n\t'.join(self.body) if len(self.body) else ''))
         return self.str

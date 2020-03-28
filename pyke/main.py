@@ -10,6 +10,7 @@ import funcy
 
 from typing import List
 
+workspace_root = ''
 
 def main(args: List[str]):
     parser = argparse.ArgumentParser(prog='pyke', description='pythonic makefile generator')
@@ -19,10 +20,10 @@ def main(args: List[str]):
     noentry = frozenset(['.git', 'cross', 'pyke', 'tools', 'errors', 'include'])
     caneval = funcy.compose(operator.__not__, noentry.__contains__)
     res = parser.parse_args(args)
-    transforms = pyke.transform(f'{res.source}!', *filter(caneval, filter(os.path.isdir, 
-                                os.listdir(res.source))))
-
+    transforms = pyke.transform(res.source, *filter(caneval, os.listdir(res.source)))
     dep_graph = pyke.build_graph(transforms)
+    makefile = pyke.generate_makefile(res.arch, dep_graph)
+    print('\n'.join(makefile))
         
 
 if __name__ == '__main__':

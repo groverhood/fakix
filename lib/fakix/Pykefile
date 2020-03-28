@@ -3,6 +3,7 @@
         'target': 'libfakix_x64',
         'arch': 'x86_64',
         'build': 'object',
-        'includes': ['{workspace_root}/include', '{workspace_root}/include/arch/x86_64']
+        'includes': ['{source_root}/include', '{source_root}/include/arch/x86_64'],
+        'c_files': ['capabilities.c']
     }
 ]

@@ -8,7 +8,7 @@ static void _start_generic(tcb_handle_t tcb, bool init)
 {
     asm volatile(
         "movq %[CRT0_TEMP_STACK], %%rsp" 
-        :: [CRT0_TEMP_STACK] "C" (crt0_temp_stack + sizeof crt0_temp_stack)
+        :: [CRT0_TEMP_STACK] "r" (crt0_temp_stack + sizeof crt0_temp_stack)
     );
 
     task_init_disabled(tcb, init);

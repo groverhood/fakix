@@ -2,11 +2,11 @@
     {
         'target': 'init',
         'arch': ['x86_64'],
-        'includes': ['{workspace_root}/include', '{workspace_root}/include/arch/x86_64'],
+        'includes': ['{source_root}/include', '{source_root}/include/arch/x86_64'],
         'dependencies': ['libfakix_x64', 'libc_x64'],
         'c_flags': ['-O2'],
         'l_file': '../sbin_link.ld',
-        'l_flags': '-e _start_init',
+        'l_flags': ['-e _start_init'],
         'c_files': ['main.c']
     }
 ]

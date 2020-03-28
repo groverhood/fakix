@@ -5,7 +5,7 @@
         'output': 'binary',
         'arch': 'x86_64',
         'destination': '/sbin/cpu_driver',
-        'includes': ['include', '{workspace_root}/include'],
+        'includes': ['include', '{source_root}/include', 'include/arch/x86_64', '{source_root}/include/arch/x86_64'],
         'c_files': ['caps/caps.c', 'core/core.c', 'arch/x86_64/boot.c',
                     'arch/x86_64/coreid.c', 'arch/x86_64/idt.c',
                     'arch/x86_64/init.c', 'arch/x86_64/upcall.c'],
