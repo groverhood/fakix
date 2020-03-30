@@ -359,6 +359,12 @@ int vsprintf(char *dest, const char *format, va_list argv)
     return argc;
 }
 
+int vprintf(const char *format, va_list argv)
+{
+    /* TODO: implement vprintf() using libc glue functions */
+    return 0;
+}
+
 int sprintf(char *dest, const char *format, ...)
 {
     int argc;

@@ -1,4 +1,7 @@
-1. Redo build system
+1. Finish build system
+	a. Add rule for creating the boot filesystem
+	b. Create DSL for intuitive QEMU configuration.
+	c. Update README to reflect new build system
 2. Implement device drivers:
 	a. AHCI
 	b. APIC

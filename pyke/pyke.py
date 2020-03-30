@@ -198,10 +198,11 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
                             dag.nodes))
 
     def get_default_rules():
-        return [make.MakeRule('all', deps=list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag)))),
-                make.MakeRule('clean', body=['rm -rf build']), 
-                make.MakeRule('builddir', body=['mkdir -p build build/target build/obj build/generated'])]
+        return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),
+                                list(map(lambda target: f'mv build/target/{target} grub/image/sbin/{target}', 
+                                    [target.target for target in dag if target.build == 'application']))),
+                make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*'])]
     
     _, *_ = map(funcy.rpartial(PykeTransform.bind, dag, arch), dag)
 
-    return map(str, itertools.chain(get_default_rules(), get_arch_recipes(arch, dag)))
+    return map(str, itertools.chain(get_default_rules(), get_arch_recipes(arch, dag))), frozenset(f'/sbin/{pt.target}' for pt in dag if pt.build == 'application')

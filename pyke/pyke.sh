@@ -1,1 +1,1 @@
-python3 $(dirname $0)/main.py $@ > Makefile
+python3 $(dirname $0)/main.py $@
