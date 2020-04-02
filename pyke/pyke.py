@@ -29,15 +29,25 @@ class Architecture(object):
 
     def __init__(self, arch_type: str):
         prefix = {
-            'x86_64': 'x86_64-linux-gnu',
-            'arm64': 'aarch64-linux-gnu'
+            'x86_64': 'x86_64-linux-gnu-',
+            'aarch64': 'aarch64-none-elf-',
+            'self': ''
         }[arch_type]
 
         self.arch_type = arch_type
-        self.compiler = f'{prefix}-gcc-9 -c -nostdlib'
-        self.linker = f'{prefix}-ld'
-        self.assember = f'{prefix}-as'
-        self.preprocessor = f'{prefix}-cpp-9'
+        self.compiler = f'{prefix}gcc-9 -c -nostdlib'
+        self.linker = f'{prefix}ld'
+        self.assember = f'{prefix}as'
+        self.preprocessor = f'{prefix}cpp-9'
+        self.getbootboot = {
+            'x86_64': 'wget -O boot/EFI/BOOT/BOOTX64.EFI https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot.efi',
+            'aarch64': 'wget -O boot/KERNEL8.IMG https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot.img',
+            'self': ''
+        }[arch_type]
+        self.qemu = {
+            'x86_64': 'qemu-system-x86_64 -bios OVMF.fd',
+            'aarch64': 'qemu-system-aarch64'
+        }[arch_type]
 
     def __str__(self):
         return self.arch_type
@@ -50,9 +60,6 @@ class Architecture(object):
 
     def __ne__(self, oth):
         return self.arch_type != oth.arch_type if isinstance(oth, Architecture) else self.arch_type != oth
-
-    def attrgetter(self, name):
-        return functools.partial(getattr, self, name)
 
     @staticmethod
     def generate_arch_list(*arch_types):
@@ -179,11 +186,12 @@ def transform(source_root: str, *directories: Iterable[str]) -> List[PykeTransfo
             filter(os.path.isdir, map(functools.partial(operator.__concat__, f'{source_root}/'), 
             directories)))), *transform_flatten(transform_collect(source_root))]
 
-def build_graph(transform_list: List[PykeTransform]):
+def build_graph(arch: str, transform_list: List[PykeTransform]):
     dependency_graph = networkx.DiGraph()
-    transforms = { tr.target: tr for tr in transform_list }
-    dependency_graph.add_nodes_from(transform_list)
-    for tr in transform_list:
+    arch_transforms = list(filter(lambda tr: arch in tr.architectures, transform_list))
+    transforms = { tr.target: tr for tr in arch_transforms }
+    dependency_graph.add_nodes_from(arch_transforms)
+    for tr in arch_transforms:
         dependency_graph.add_edges_from([(tr, transforms[dep]) 
                                             for dep in tr.dependencies])
     return dependency_graph
@@ -199,9 +207,17 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
 
     def get_default_rules():
         return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),
-                                list(map(lambda target: f'mv build/target/{target} grub/image/sbin/{target}', 
+                                list(map(lambda target: f'cp build/target/{target} initrd/sbin/{target}', 
                                     [target.target for target in dag if target.build == 'application']))),
-                make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*'])]
+                make.MakeRule('image', body=[Architecture(arch).getbootboot,
+                                             'tar -czf boot/BOOTBOOT/INITRD initrd',
+                                             'cp /usr/share/ovmf/OVMF.fd .',
+                                             f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=16',
+                                             f'mkfs.vfat -F 16 fakix_{arch}_image',
+                                             f'mcopy -i fakix_{arch}_image -s boot/* ::'
+                                             ]),
+                make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*']),
+                make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} -drive format=raw,file=fakix_{arch}_image -nographic'])]
     
     _, *_ = map(funcy.rpartial(PykeTransform.bind, dag, arch), dag)
 
