@@ -30,7 +30,7 @@ def main(args: List[str]):
     makefile, sbins = pyke.generate_makefile(res.arch, dep_graph)
 
     for builddir in ['build/target', 'build/obj', 'build/generated', 'boot/BOOTBOOT',
-                     'initrd/sbin']:
+                     'initrd']:
         try:
             os.makedirs(builddir)
         except FileExistsError:

@@ -5,30 +5,28 @@
 ENTRY(_start)
 SECTIONS
 {
-    . = VSPACE_KERN_OFFSET;
-    .start ALIGN(4K) : {
-        KEEP(*(.multiboot));
-        *(.start);
-        *(.start.*);
-    }
-
     /* This must be defined for all architectures. */
-    . += VSPACE_KERN_BASE;
+    mmio = VSPACE_MMIO_BASE; 
+    fb = VSPACE_FB_BASE;
+    . = VSPACE_KERN_BASE;
 
-    .text ALIGN(4K) : AT(ADDR(.text) - VSPACE_KERN_BASE) {
+    bootboot = .; . += VSPACE_BASE_PAGE_SIZE;
+    environment = .; . += VSPACE_BASE_PAGE_SIZE;
+
+    .text ALIGN(4K) : {
         *(.text);
         _etext = ALIGN(4K);
     }
 
-    .rodata ALIGN(4K) : AT(ADDR(.rodata) - VSPACE_KERN_BASE) {
+    .rodata ALIGN(4K) : {
         *(.rodata);
     }
 
-    .data ALIGN(4K) : AT(ADDR(.data) - VSPACE_KERN_BASE) {
+    .data ALIGN(4K) : {
         *(.data);
         _edata = ABSOLUTE(.);
     }
-    .bss ALIGN(4K) : AT(ADDR(.bss) - VSPACE_KERN_BASE) {
+    .bss ALIGN(4K) : {
         *(.bss);
         _end = ABSOLUTE(.);
     }

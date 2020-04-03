@@ -1,12 +1,11 @@
-#include <fakix/vspace.h>
-#include <int/idt_ent.h>
-#include <fakix/addr.h>
-#include <attributes.h>
+
 #include <stddef.h>
-#include <stdint.h>
-#include <gdt.h>
+#include <bootboot/bootboot.h>
+
+extern BOOTBOOT bootboot;
 
 void _start(void)
 {
-    
+    volatile char *foo = NULL;
+    int c = *foo;
 }

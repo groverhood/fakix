@@ -29,21 +29,22 @@ class Architecture(object):
 
     def __init__(self, arch_type: str):
         prefix = {
-            'x86_64': 'x86_64-linux-gnu-',
+            'x86_64': 'x86_64-elf-',
             'aarch64': 'aarch64-none-elf-',
             'self': ''
         }[arch_type]
 
         self.arch_type = arch_type
-        self.compiler = f'{prefix}gcc-9 -c -nostdlib'
-        self.linker = f'{prefix}ld'
+        self.compiler = f'{prefix}gcc -c -nostdlib'
+        self.linker = f'{prefix}ld -nostdlib -nostartfiles -Lbuild/target'
         self.assember = f'{prefix}as'
-        self.preprocessor = f'{prefix}cpp-9'
+        self.preprocessor = f'{prefix}cpp'
         self.getbootboot = {
             'x86_64': 'wget -O boot/EFI/BOOT/BOOTX64.EFI https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot.efi',
             'aarch64': 'wget -O boot/KERNEL8.IMG https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot.img',
             'self': ''
         }[arch_type]
+        self.archive = f'{prefix}ar'
         self.qemu = {
             'x86_64': 'qemu-system-x86_64 -bios OVMF.fd',
             'aarch64': 'qemu-system-aarch64'
@@ -83,7 +84,7 @@ class PykeTransform(object):
         self.architectures = Architecture.generate_arch_list(*([arch] if not isinstance(arch, list) else arch))
         self.selected_arch: Architecture = None
         self.target = target
-        self.destination = destination
+        self.destination = f'initrd{destination}' if destination is not None else 'initrd/'
         self.commands = commands
         self.c_files = list(map(bound_format, c_files))
         self.s_files = list(map(bound_format, s_files))
@@ -106,14 +107,14 @@ class PykeTransform(object):
         return 'build/obj/' + re.sub(r'\.[sc]$', '.o', os.path.basename(s))
 
     def depobjs(self):
-        return map(PykeTransform.objs, filter(funcy.compose(functools.partial(operator.__eq__, 'object'),
+        return map(lambda pt: f'-l{pt.target.replace("lib", "", 1)}', filter(funcy.compose(functools.partial(operator.__eq__, 'object'),
                 funcy.rpartial(getattr, 'build')), map(operator.itemgetter(1), self.binding_dgraph.out_edges(self))))
  
 
     def objs(self):
         if not self.comp_objs:
-            self.objects = transform_flatten(itertools.chain(map(PykeTransform.build_string, self.c_files), 
-                                             map(PykeTransform.build_string, self.s_files), self.depobjs()))
+            self.objects = (transform_flatten(itertools.chain(map(PykeTransform.build_string, self.c_files), 
+                                             map(PykeTransform.build_string, self.s_files), self.depobjs())))
             self.comp_objs = True
         return self.objects
 
@@ -122,16 +123,15 @@ class PykeTransform(object):
             return ''
 
         def link_body():
-            if self.build == 'bundle':
+            if self.build == 'bundle' or self.build == 'object':
                 return []
 
             objstring = ' '.join(self.objs())
-            l_flags = self.l_flags + (f' -r -o build/target/{self.target}.o' if self.build == 'object' else f' -o build/target/{self.target}')
+            l_flags = self.l_flags + (f' -o build/target/{self.target}')
             ld_command = f'{self.selected_arch.linker} {l_flags} {objstring}'
             return ([f'{self.selected_arch.preprocessor} {self.includes} {self.l_file} | grep -v \'^#\' > build/generated/' + os.path.basename(self.l_file) + f'; {ld_command}']
                         if self.l_file is not None 
                         else [f'{self.selected_arch.linker} {l_flags} {objstring}'])
-
         self.comp = True
         if not self.generated_make:
             edges = map(funcy.rpartial(PykeTransform.bind, self.binding_dgraph, self.selected_arch),
@@ -139,12 +139,15 @@ class PykeTransform(object):
             depstring = ' '.join(self.dependencies)
             s_files = [(PykeTransform.build_string(s_file), s_file) for s_file in self.s_files]
             c_files = [(PykeTransform.build_string(c_file), c_file) for c_file in self.c_files]
+            objstring = ' '.join(self.objs())
             self.make = '\n'.join([*filter(len, map(str, edges)), 
                                    '\n\t'.join([f'{self.target}: {depstring}',
                                               *itertools.starmap(lambda o, c: f'{self.selected_arch.compiler} {self.c_flags} {self.includes} {c} -o {o}', c_files),
                                               *itertools.starmap(lambda o, s: f'{self.selected_arch.preprocessor} -DASM_FILE {s} {self.includes} | {self.selected_arch.assember} {self.s_flags} -o {o}',
                                                    s_files),
-                                              *link_body()])])
+                                              *link_body(),
+                                              *([f'{self.selected_arch.archive} rcs build/target/{self.target}.a {objstring}']
+                                                 if self.build == 'object' else [])])])
             self.generated_make = True
     
         return self.make    
@@ -207,15 +210,18 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
 
     def get_default_rules():
         return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),
-                                list(map(lambda target: f'cp build/target/{target} initrd/sbin/{target}', 
-                                    [target.target for target in dag if target.build == 'application']))),
+                                list(map(lambda target: f'mkdir -p {os.path.dirname(target.destination)}; '
+                                                        f'cp build/target/{target.target} {target.destination}', 
+                                    [target for target in dag if target.build == 'application']))),
                 make.MakeRule('image', body=[Architecture(arch).getbootboot,
-                                             'tar -czf boot/BOOTBOOT/INITRD initrd',
+                                             'echo "kernel=sbin/cpu_driver\\n" >> boot/BOOTBOOT/CONFIG',
+                                             f'dd if=/dev/zero of=boot/BOOTBOOT/INITRD bs=1M count=2',
+                                             'mkfs.fat boot/BOOTBOOT/INITRD',
+                                             'mcopy -i boot/BOOTBOOT/INITRD -s initrd/* ::',
                                              'cp /usr/share/ovmf/OVMF.fd .',
-                                             f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=16',
-                                             f'mkfs.vfat -F 16 fakix_{arch}_image',
-                                             f'mcopy -i fakix_{arch}_image -s boot/* ::'
-                                             ]),
+                                             f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=4',
+                                             f'mkfs.fat fakix_{arch}_image',
+                                             f'mcopy -i fakix_{arch}_image -s boot/* ::']),
                 make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*']),
                 make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} -drive format=raw,file=fakix_{arch}_image -nographic'])]
     

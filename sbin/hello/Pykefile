@@ -1,0 +1,11 @@
+[
+    {
+        'target': 'hello',
+        'arch': 'x86_64',
+        'build': 'application',
+        'c_files': ['hello.c'],
+        'destination': '/sbin/hello',
+        'includes': ['{source_root}/include', '{source_root}/include/x86_64'],
+        'dependencies': ['libfakix_x64', 'libc_x64']
+    }
+]

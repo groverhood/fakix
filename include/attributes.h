@@ -1,6 +1,14 @@
 #ifndef FAKIX_LIBC_ATTRIBUTES_H
 #define FAKIX_LIBC_ATTRIBUTES_H
 
+#ifdef __cplusplus
+#define __BEGIN_DECLS extern "C" {
+#define __END_DECLS }
+#else
+#define __BEGIN_DECLS
+#define __END_DECLS
+#endif
+
 /* Use this with architecture-specific structures. */
 #define packed __attribute__((packed))
 

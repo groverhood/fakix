@@ -6,7 +6,7 @@
         'arch': 'x86_64',
         'destination': '/sbin/cpu_driver',
         'includes': ['include', '{source_root}/include', 'include/arch/x86_64', '{source_root}/include/arch/x86_64'],
-        'c_files': ['caps/caps.c', 'core/core.c', 'arch/x86_64/coreid.c',
+        'c_files': ['caps/caps.c', 'core/core.c', 'arch/x86_64/coreid.c', 'arch/x86_64/boot.c',
                     'arch/x86_64/idt.c', 'arch/x86_64/upcall.c'],
         'c_flags': ['-O2', '-mno-red-zone'],
         'l_file': 'fakix_link.ld',
