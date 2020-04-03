@@ -1,4 +1,0 @@
-#ifndef KERNEL_BOOTBOOT_FILE_H
-#define KERNEL_BOOTBOOT_FILE_H 1
-
-#endif

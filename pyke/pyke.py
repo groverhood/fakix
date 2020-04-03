@@ -215,15 +215,14 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
                                     [target for target in dag if target.build == 'application']))),
                 make.MakeRule('image', body=[Architecture(arch).getbootboot,
                                              'echo "kernel=sbin/cpu_driver\\n" >> boot/BOOTBOOT/CONFIG',
-                                             f'dd if=/dev/zero of=boot/BOOTBOOT/INITRD bs=1M count=2',
-                                             'mkfs.fat boot/BOOTBOOT/INITRD',
-                                             'mcopy -i boot/BOOTBOOT/INITRD -s initrd/* ::',
+                                             '(cd initrd; tar -czf ../boot/BOOTBOOT/INITRD *)',
                                              'cp /usr/share/ovmf/OVMF.fd .',
                                              f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=4',
                                              f'mkfs.fat fakix_{arch}_image',
                                              f'mcopy -i fakix_{arch}_image -s boot/* ::']),
                 make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*']),
-                make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} -drive format=raw,file=fakix_{arch}_image -nographic'])]
+                make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} '
+                                            f'-drive format=raw,file=fakix_{arch}_image -nographic'])]
     
     _, *_ = map(funcy.rpartial(PykeTransform.bind, dag, arch), dag)
 
