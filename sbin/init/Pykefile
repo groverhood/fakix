@@ -6,7 +6,7 @@
         'includes': ['{source_root}/include', '{source_root}/include/arch/x86_64'],
         'dependencies': ['libfakix_x64', 'libc_x64'],
         'c_flags': ['-O2'],
-        'l_flags': ['-e _start_init', '-pie'],
+        'l_flags': ['-e _start_init'],
         'c_files': ['main.c']
     }
 ]

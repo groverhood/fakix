@@ -107,8 +107,8 @@ class PykeTransform(object):
         return 'build/obj/' + re.sub(r'\.[sc]$', '.o', os.path.basename(s))
 
     def depobjs(self):
-        return map(lambda pt: f'-l{pt.target.replace("lib", "", 1)}', filter(funcy.compose(functools.partial(operator.__eq__, 'object'),
-                funcy.rpartial(getattr, 'build')), map(operator.itemgetter(1), self.binding_dgraph.out_edges(self))))
+        return reversed(list(map(lambda pt: f'-l{pt.target.replace("lib", "", 1)}', filter(funcy.compose(functools.partial(operator.__eq__, 'object'),
+                funcy.rpartial(getattr, 'build')), map(operator.itemgetter(1), self.binding_dgraph.out_edges(self))))))
  
 
     def objs(self):
