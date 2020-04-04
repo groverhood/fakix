@@ -11,6 +11,14 @@ struct capability {
     caprights_t rights;
     paddr_t base;
     size_t size;
+
+    union {
+        
+        /* objtype =  */
+        struct {
+
+        };
+    };
 };
 
 errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret_cap);
@@ -33,5 +41,9 @@ static struct capability *caps_get_cnode(cnode_t cnode)
 {
     return (struct capability *)cnode;
 }
+
+errval_t caps_create_vtable(void *table, size_t buflen, enum cap_object_type objtype, struct capability *ret_cap);
+
+errval_t caps_vmap(struct capability *dest, struct capability *src, ptrdiff_t off, capslot_t slot, capslot_t nslots, int flags);
 
 #endif
