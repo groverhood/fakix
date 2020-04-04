@@ -31,6 +31,8 @@
 #ifndef _BOOTBOOT_H_
 #define _BOOTBOOT_H_
 
+#include <attributes.h>
+
 #ifdef  __cplusplus
 #include <cstdint>
 extern "C" {
@@ -69,7 +71,7 @@ extern "C" {
 typedef struct {
   uint64_t   ptr;
   uint64_t   size;
-} __attribute__((packed)) MMapEnt;
+} packed MMapEnt;
 #define MMapEnt_Ptr(a)  (a->ptr)
 #define MMapEnt_Size(a) (a->size & 0xFFFFFFFFFFFFFFF0)
 #define MMapEnt_Type(a) (a->size & 0xF)
@@ -129,7 +131,7 @@ typedef struct {
   /* use like this:
    * MMapEnt *mmap_ent = &bootboot.mmap; mmap_ent++;
    * until you reach bootboot->size */
-} __attribute__((packed)) BOOTBOOT;
+} packed BOOTBOOT;
 
 
 #ifdef  __cplusplus

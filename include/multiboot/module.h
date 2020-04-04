@@ -1,4 +1,0 @@
-#ifndef MULTIBOOT_MODULE_H
-#define MULTIBOOT_MODULE_H 1
-
-#endif

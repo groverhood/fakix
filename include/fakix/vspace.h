@@ -9,11 +9,12 @@
 #define VSPACE_EXPECTED_PAGE_BITS 9
 #define VSPACE_EXPECTED_OFFSET_BITS 12
 #define VSPACE_TABLE_OFFSET_ZI(a, l, n, o) (((a) & ((VSPACE_PAGE_OFFSET_MASK(n) << ((l) * (n) + (o))))) >> ((l) * (n) + (o)))
-#define VSPACE_TABLE_OFFSET(a, l, n, o) VSPACE_TABLE_OFFSET_ZI(a, l - 1, n, o)
+#define VSPACE_TABLE_OFFSET(a, l, n, o) VSPACE_TABLE_OFFSET_ZI(a, (4 - l), n, o)
 #define VSPACE_TABLE_ENTRIES (VSPACE_BASE_PAGE_SIZE / VSPACE_WORD_SIZE)
 #define VSPACE_MMIO_BASE 0xfffffffff8000000
 #define VSPACE_FB_BASE 0xfffffffffc000000
 #define VSPACE_KERN_BASE 0xffffffffffe00000
+#define VSPACE_PHYS_IDENT_SIZE (VSPACE_HUGE_PAGE_SIZE * 16)
 #define VSPACE_PAGE_ALIGN align(VSPACE_BASE_PAGE_SIZE)
 #define VSPACE_GAP_TOP 0x400000
 

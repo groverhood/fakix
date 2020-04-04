@@ -1,6 +1,7 @@
 #ifndef FAKIX_CSPACE_H
 #define FAKIX_CSPACE_H 1
 
+#include <stddef.h>
 #include <stdint.h>
 #include <fakix/addr.h>
 #include <fakix/vspace.h>

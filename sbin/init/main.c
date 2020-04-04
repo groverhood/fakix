@@ -1,6 +1,6 @@
 
 #include <fakix/capabilities.h>
-#include <fakix/init/ramcaps.h>
+#include <fakix/init/initcaps.h>
 #include <fakix/ram.h>
 
 /**
