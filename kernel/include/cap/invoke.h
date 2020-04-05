@@ -4,7 +4,7 @@
 #include <cap/caps.h>
 #include <fakix/errtype.h>
 
-errval_t caps_invoke(capaddr_t cap, cap_invoke_t invocation, sysarg_t arg0, 
+errval_t caps_invoke(capaddr_t cap, enum cap_invocation invocation, sysarg_t arg0, 
                      sysarg_t arg1, sysarg_t arg2, sysarg_t arg3, sysarg_t arg4);
 
 #endif
