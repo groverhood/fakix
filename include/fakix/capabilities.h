@@ -5,6 +5,7 @@
 #include <fakix/vspace.h>
 #include <fakix/cspace.h>
 #include <fakix/errtype.h>
+#include <fakix/syscall.h>
 
 #define CTE_SIZE (64)
 #define CTE_COUNT (PAGE_SIZE / WORD_SIZE)
@@ -15,7 +16,7 @@ enum cap_object_type {
     CAP_OBJECT_L1, /* L1 cnode table. */
     CAP_OBJECT_L2, /* L2 cnode table. */
     CAP_OBJECT_PHYSICAL, /* Physical address region. */
-    CAP_OBJECT_PCB, /* Process control block. */
+    CAP_OBJECT_TCB, /* Task control block. */
     CAP_OBJECT_RAM, /* Raw, untyped RAM. */
     CAP_OBJECT_FRAME, /* Frame to be mapped into virtual memory. */
     CAP_OBJECT_DEVICE, /* MMIO region. */
@@ -78,5 +79,12 @@ errval_t cap_retype_ref(struct capref dest, struct capref src,
 
 /* Retype a capability. Can be an inter-CSpace or intra-CSpace operation. */
 errval_t cap_copy_ref(struct capref dest, struct capref src, caprights_t prop);
+
+enum cap_invocation {
+    INVOKE_TASK,
+};
+
+errval_t cap_invoke(capaddr_t cap, enum cap_invocation invoke, sysarg_t arg0,
+                    sysarg_t arg1, sysarg_t arg2, sysarg_t arg3);
 
 #endif

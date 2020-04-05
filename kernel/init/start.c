@@ -11,7 +11,6 @@
 
 extern BOOTBOOT bootboot;
 
-
 typedef struct file {
     uint8_t *ptr;
     uint64_t size;
@@ -31,7 +30,9 @@ void start(struct bootinfo *bi)
     struct capability *dev_cnode = alloc_init_cap();
     struct capability *acpi_cnode = alloc_init_cap();
 
-    
+    caps_write_cap(l1cnode, CAP_INIT_RAM_BASE, ram_cnode);
+    caps_write_cap(l1cnode, CAP_INIT_DEV_BASE, dev_cnode);
+    caps_write_cap(l1cnode, CAP_INIT_ACPI_BASE, acpi_cnode);
     
     capaddr_t ramcap = CAP_INIT_RAM_BASE;
     capaddr_t devcap = CAP_INIT_DEV_BASE;
@@ -39,17 +40,19 @@ void start(struct bootinfo *bi)
     MMapEnt *mm = &bootboot.mmap;
 
     while (MMapEnt_Ptr(mm) != 0) {
-        
         switch (MMapEnt_Type(mm)) {
             case MMAP_FREE: {
-
+                struct capability *ram_capability = alloc_init_cap();
+                ram_capability->base = MMapEnt_Ptr(mm);
+                ram_capability->size = MMapEnt_Size(mm);
+                ram_capability->objtype = CAP_OBJECT_RAM;
+                ram_capability->rights = CAP_RIGHTS_RDWR;
                 ramcap++;
+                caps_write_cap(ram_cnode, ramcap, ram_capability);
             } break;
         }
         mm++;
     }
-
-
 
     file_t init = tar_initrd((uint8_t *)bootboot.initrd_ptr, "sbin/init");
     Elf64_Ehdr *ehdr = (Elf64_Ehdr *)init.ptr;

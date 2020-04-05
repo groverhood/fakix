@@ -24,4 +24,6 @@
         (error "VT_INVALID_FLAGS" "provided invalid flags")
         (error "VT_SLOT_OOB" "provided an out-of-bounds slot")
         (error "VT_BYTES_ZERO_OR_UNALIGNED" "provided a region containing no or unaligned memory")
-        (error "VT_INVALID_SIZE" "provided an aligned size that wasn't valid for a single entry")))
+        (error "VT_INVALID_SIZE" "provided an aligned size that wasn't valid for a single entry")
+        
+        (error "SYSCALL_BADNUM" "bad syscall number provided")))

@@ -43,5 +43,7 @@
 #define KERNEL_ERR_VT_BYTES_ZERO_OR_UNALIGNED_ERRSTR "provided a region containing no or unaligned memory"
 #define KERNEL_ERR_VT_INVALID_SIZE 20
 #define KERNEL_ERR_VT_INVALID_SIZE_ERRSTR "provided an aligned size that wasn't valid for a single entry"
+#define KERNEL_ERR_SYSCALL_BADNUM 21
+#define KERNEL_ERR_SYSCALL_BADNUM_ERRSTR "bad syscall number provided"
 
 #endif

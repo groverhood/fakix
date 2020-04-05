@@ -8,6 +8,8 @@
 
 typedef vaddr_t tcb_handle_t;
 
+struct thread;
+
 /* Shared user/kernel TCB struct */
 struct tcb_generic_shared {
     union registers disabled_save_area, enabled_save_area;
@@ -25,6 +27,7 @@ struct tcb_generic {
 
     struct paging_state *pager;
     vaddr_t self;
+    struct thread *current;
 };
 
 static inline struct tcb_generic *tcb_get_generic(tcb_handle_t tcb)
