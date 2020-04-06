@@ -5,14 +5,14 @@
 vtable_t vtable_current(void)
 {
     uint64_t vt;
-    asm ("movq %cr3, %rax" : "=a" (vt));
+    asm ("movq %%cr3, %%rax" : "=a" (vt));
     return (vtable_t)(vt & ~0xfff);
 }
 
 errval_t vtable_set_current(vtable_t newvt, vtable_t *ret_oldvt)
 {
     *ret_oldvt = vtable_current();
-    asm volatile ("movq %rdi, %cr3" :: "D" (newvt));
+    asm volatile ("movq %%rdi, %%cr3" :: "D" (newvt));
     return ERR_OK;
 }
 

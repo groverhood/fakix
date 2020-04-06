@@ -2,8 +2,10 @@
 #include <stddef.h>
 #include <elf/elf.h>
 #include <cap/caps.h>
+#include <log/print.h>
 #include <attributes.h>
 #include <sys/vtable.h>
+#include <cap/invoke.h>
 #include <fakix/vspace.h>
 #include <init/startup.h>
 #include <bootboot/bootboot.h>
@@ -19,9 +21,28 @@ typedef struct file {
 static file_t tar_initrd(unsigned char *initrd_p, char *kernel);
 static struct capability *alloc_init_cap(void);
 
+static inline errval_t sys_default(void)
+{
+    return ERR_OK;
+}
+
+void *syscall_table[SYS_COUNT] = {
+    [0 ... SYS_COUNT - 1] = &sys_default,
+    [SYS_INVOKE_CAP] = &caps_invoke,
+    [SYS_CREATE_CAP] = &caps_create_entry,
+    [SYS_RETYPE_CAP] = &caps_retype,
+    [SYS_DESTROY_CAP] = &caps_destroy,
+    [SYS_COPY_CAP] = &caps_copy,
+    [SYS_MAP_CAP] = &caps_vmap
+};
+
 void start(struct bootinfo *bi)
 {
     static char VSPACE_PAGE_ALIGN init_l1cnode_buffer[VSPACE_BASE_PAGE_SIZE];
+    static char VSPACE_PAGE_ALIGN init_ramcap_buffer[VSPACE_BASE_PAGE_SIZE];
+    static char VSPACE_PAGE_ALIGN init_devframe_buffer[VSPACE_BASE_PAGE_SIZE];
+    static char VSPACE_PAGE_ALIGN init_acpi_buffer[VSPACE_BASE_PAGE_SIZE];
+    static char VSPACE_PAGE_ALIGN init_task_buffer[VSPACE_BASE_PAGE_SIZE];
     
     struct capability *l1cnode = alloc_init_cap();
     caps_create_l1_cnode(init_l1cnode_buffer, VSPACE_BASE_PAGE_SIZE, l1cnode);
@@ -29,11 +50,20 @@ void start(struct bootinfo *bi)
     struct capability *ram_cnode = alloc_init_cap();
     struct capability *dev_cnode = alloc_init_cap();
     struct capability *acpi_cnode = alloc_init_cap();
+    struct capability *task_cnode = alloc_init_cap();
+
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
 
     caps_write_cap(l1cnode, CAP_INIT_RAM_BASE, ram_cnode);
     caps_write_cap(l1cnode, CAP_INIT_DEV_BASE, dev_cnode);
     caps_write_cap(l1cnode, CAP_INIT_ACPI_BASE, acpi_cnode);
-    
+    caps_write_cap(l1cnode, CAP_ADDR(CNODE_TASK, 0), task_cnode);
+
+    kernel_log("initialized init L1/L2 capabilities, onto creating ramcaps\n");
+
     capaddr_t ramcap = CAP_INIT_RAM_BASE;
     capaddr_t devcap = CAP_INIT_DEV_BASE;
     capaddr_t acpicap = CAP_INIT_ACPI_BASE;
@@ -54,9 +84,12 @@ void start(struct bootinfo *bi)
         mm++;
     }
 
+    kernel_log("initialized ramcaps, now creating init task\n");
+
     file_t init = tar_initrd((uint8_t *)bootboot.initrd_ptr, "sbin/init");
     Elf64_Ehdr *ehdr = (Elf64_Ehdr *)init.ptr;
     
+    while (1) asm("");
 }
 
 static struct capability *alloc_init_cap(void)
@@ -69,8 +102,8 @@ static struct capability *alloc_init_cap(void)
 
 static int memcmp(const void *_fst, const void *_snd, size_t bytes)
 {
-    unsigned char *fst = _fst;
-    unsigned char *snd = _snd;
+    const unsigned char *fst = _fst;
+    const unsigned char *snd = _snd;
     int dif = 0;
 
     while (bytes-- > 0) {

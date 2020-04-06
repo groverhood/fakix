@@ -2,7 +2,7 @@
 #include <sys/upcall.h>
 #include <sys/core.h>
 #include <int/isr.h>
-#include <gdt.h>
+#include <cpu/gdt.h>
 
 static uint8_t idt_cap_buffer[VSPACE_BASE_PAGE_SIZE * 2];
 
@@ -31,9 +31,7 @@ void isr_common_stub(ivec_t ivec)
     upcall_addr_t uaddr = redirect_table[ivec].uaddr;
 
     if (cur == next) {
-        struct tcb_generic_shared *next_shared = tcb_get_generic_shared(next);
-        next_shared->pc = uaddr;
-        upcall_switch(cur, next);
+        
     }
 
     ireturn();

@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 #include <fakix/addr.h>
-#include <fakix/tcb_arch.h>
+#include <fakix/cspace.h>
 #include <fakix/paging.h>
+#include <fakix/tcb_arch.h>
 
 typedef vaddr_t tcb_handle_t;
 
@@ -18,6 +19,7 @@ struct tcb_generic_shared {
     bool disabled;
     struct tcb_arch_shared arch_state;
     vaddr_t pc;
+    cnode_t l1cnode;
 };
 
 /* User-only TCB struct */

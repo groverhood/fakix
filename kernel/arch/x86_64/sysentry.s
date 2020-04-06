@@ -21,7 +21,7 @@ invoke:
     movq $0, %rsp /* BOOTBOOT initialized stack repurposed for trapping. */
     pushq %rcx
     pushq %r11
-    callq *(syscall_table, %rax, 8)
+    callq *syscall_table(, %rax, 8)
     popq %r11
     popq %rcx
     movq stack_reserve, %rsp

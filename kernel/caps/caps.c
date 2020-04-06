@@ -2,41 +2,41 @@
 #include <util/arith.h>
 #include <sys/vtable.h>
 #include <fakix/errtype.h>
+#include <fakix/tcb_current.h>
 
 errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret_cap)
 {
-    paddr_t addr;
-    errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)table, &addr);
-    if (err_is_fail(err)) {
-        return err;
+    if (buflen != VSPACE_BASE_PAGE_SIZE) {
+        return CAP_ERR_OVERSIZED_VTABLE;
+    } else {
+        paddr_t addr;
+        errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)table, &addr);
+        if (err_is_fail(err)) {
+            return err;
+        }
+
+        size_t i;
+        struct capability **caps = table;
+        for (i = 0; i < VSPACE_BASE_PAGE_SIZE / sizeof *caps; ++i) {
+            caps[i] = NULL;
+        }
+
+        ret_cap->base = addr;
+        ret_cap->objtype = CAP_OBJECT_L1;
+        ret_cap->size = buflen;
+        ret_cap->rights = CAP_RIGHTS_RDWR;
     }
 
-    size_t i;
-    struct capability **l2_caps = table;
-    for (i = 0; i < VSPACE_BASE_PAGE_SIZE / sizeof *l2_caps; ++i) {
-        l2_caps[i] = NULL;
-    }
-
-    ret_cap->base = addr;
-    ret_cap->objtype = CAP_OBJECT_L1;
-    ret_cap->size = buflen;
-    ret_cap->rights = CAP_RIGHTS_RDWR;
-    
     return ERR_OK;
 }
 
-errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *l1_cnode_cap,
-                              capslot_t slot, struct capability *ret_cap)
+errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *ret_cap)
 {
-    errval_t err = ERR_OK;
-    struct capability **l2_caps = (struct capability **)(l1_cnode_cap->base + VSPACE_KERN_BASE);
-    if (l2_caps[slot] != NULL) {
-        err = CAP_ERR_WRITE_ALLOCATED_CAP;
-    } else if (buflen != VSPACE_BASE_PAGE_SIZE) {
-
+    if (buflen != VSPACE_BASE_PAGE_SIZE) {
+        return CAP_ERR_OVERSIZED_VTABLE;
     } else {
         paddr_t addr;
-        err = vtable_get_mapping(vtable_current(), (vaddr_t)table, &addr);
+        errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)table, &addr);
         if (err_is_fail(err)) {
             return err;
         }
@@ -51,7 +51,55 @@ errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *l1_
         ret_cap->objtype = CAP_OBJECT_L2;
         ret_cap->size = buflen;
         ret_cap->rights = CAP_RIGHTS_RDWR;
-        l2_caps[slot] = ret_cap;
+    }
+
+    return ERR_OK;
+}
+
+errval_t caps_create(void *table, size_t buflen, enum cap_object_type objtype,
+                     caprights_t rights, struct capability *ret_cap)
+{
+    switch (objtype) {
+
+    }
+
+    return ERR_OK;
+}
+
+static struct capability *get_root_cap(void)
+{
+    return (struct capability *)tcb_get_generic_shared(tcb_current())->l1cnode;
+}
+
+errval_t caps_create_entry(void *table, size_t buflen, enum cap_object_type objtype,
+                           caprights_t rights, struct capability *ret_cap)
+{
+    errval_t err;
+
+    switch (objtype) {
+        case CAP_OBJECT_L1:
+            if (rights != CAP_RIGHTS_RDWR) {
+                err = CAP_ERR_INVALID_RIGHTS;
+            } else {
+                err = caps_create_l1_cnode(table, buflen, ret_cap);
+            }
+        break;
+        case CAP_OBJECT_L2: 
+            if (rights != CAP_RIGHTS_RDWR) {
+                err = CAP_ERR_INVALID_RIGHTS;
+            } else {
+                err = caps_create_l2_cnode(table, buflen, ret_cap);
+            }
+        break;
+        case CAP_OBJECT_FRAME:
+        case CAP_OBJECT_TCB:
+        case CAP_OBJECT_VTL1:
+        case CAP_OBJECT_VTL2:
+        case CAP_OBJECT_VTL3:
+        case CAP_OBJECT_VTL4: 
+            err = caps_create(table, buflen, objtype, rights, ret_cap);
+        break;
+        default: err = CAP_ERR_INVALID_TYPE_OPERATION;
     }
 
     return err;
@@ -202,7 +250,7 @@ errval_t caps_create_vtable(void *table, size_t buflen, enum cap_object_type obj
     }
 
     paddr_t addr;
-    errval_t err = vtable_get_mapping(vtable_current(), table, &addr);
+    errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)table, &addr);
     if (err_is_fail(err)) {
         return err;
     }
@@ -319,4 +367,10 @@ errval_t caps_vmap(struct capability *dest, struct capability *src, ptrdiff_t of
     }
 
     return err;
+}
+
+errval_t caps_invoke(capaddr_t cap, enum cap_invocation invocation, sysarg_t arg0, 
+                     sysarg_t arg1, sysarg_t arg2, sysarg_t arg3, sysarg_t arg4)
+{
+    return ERR_OK;
 }

@@ -6,7 +6,7 @@ errval_t upcall_jump(upcall_addr_t uaddr)
 {
     asm volatile (
         "pushfq\n\t"
-        "popfq %%r11\n\t" 
+        "popq %%r11\n\t" 
         "sti\n\t"
         "sysret" 
         :: "c" (uaddr)

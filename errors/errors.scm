@@ -11,6 +11,7 @@
         (error "RETYPE_SUPER" "attempted to retype to a supertype")
         (error "RETYPE_SIBLING" "attempted to retype to a sibling type")
         (error "INVALID_TYPE_OPERATION" "attempted to perform a type-specific operation on a incompatible capability")
+        (error "INVALID_RIGHTS" "attempted to initialize a capability with type-incompatible rights")
         (error "RETYPE_TOO_SMALL" "the provided source capability is too small to perform a retype with the given parameters")
         (error "NEGATIVE_OFFSET" "the capability operation cannot be performed with a negative offset")
         (error "UNALIGNED_OFFSET" "the offset provided is not aligned to a huge/super/base page boundary")
@@ -26,4 +27,8 @@
         (error "VT_BYTES_ZERO_OR_UNALIGNED" "provided a region containing no or unaligned memory")
         (error "VT_INVALID_SIZE" "provided an aligned size that wasn't valid for a single entry")
         
-        (error "SYSCALL_BADNUM" "bad syscall number provided")))
+        (error "SYSCALL_BADNUM" "bad syscall number provided")
+        
+        (error "WRMSR_INVALID_MSR" "provided MSR is out of bounds or not a valid MSR")
+        
+        (error "PORTIO_NULL_RETPTR" "provided a null pointer to inb()")))

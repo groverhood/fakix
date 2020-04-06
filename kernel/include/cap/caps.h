@@ -15,11 +15,14 @@ struct capability {
 
 errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret_cap);
 
-errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *l1_cnode_cap,
-                              capslot_t slot, struct capability *ret_cap);
+errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *ret_cap);
 
 errval_t caps_create(void *table, size_t buflen, enum cap_object_type objtype,
                      caprights_t rights, struct capability *ret_cap);
+
+/* Entry point for SYS_CREATE_CAP. */
+errval_t caps_create_entry(void *table, size_t buflen, enum cap_object_type objtype,
+                           caprights_t rights, struct capability *ret_cap);
 
 errval_t caps_retype(struct capability *dest, struct capability *src, 
                      enum cap_object_type objtype, size_t size, ptrdiff_t offset);

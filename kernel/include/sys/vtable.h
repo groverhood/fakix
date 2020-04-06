@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <fakix/addr.h>
 #include <fakix/vspace.h>
+#include <fakix/cspace.h>
 #include <fakix/errtype.h>
 
 #define VTABLE_SLOT(a, l) VSPACE_TABLE_OFFSET(a, l, VSPACE_EXPECTED_PAGE_BITS, VSPACE_EXPECTED_OFFSET_BITS)

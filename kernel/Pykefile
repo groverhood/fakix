@@ -9,7 +9,9 @@
                      '{source_root}/include/arch/x86_64'],
         'c_files': ['caps/caps.c', 'core/core.c', 'arch/x86_64/coreid.c', 
                     'init/start.c', 'arch/x86_64/local_start.c',
-                    'arch/x86_64/idt.c', 'arch/x86_64/upcall.c'],
+                    'arch/x86_64/idt.c', 'arch/x86_64/upcall.c', 'arch/x86_64/serial.c',
+                    'log/print.c', 'arch/x86_64/vtable.c'],
+        's_files': ['arch/x86_64/sysentry.s'],
         'c_flags': ['-O2', '-mno-red-zone', '-mcmodel=kernel'],
         'l_file': 'fakix_link.ld',
         'l_flags': ['--no-relax']

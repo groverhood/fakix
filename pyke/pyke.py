@@ -211,19 +211,18 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
     def get_default_rules():
         return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),
                                 list(map(lambda target: f'mkdir -p {os.path.dirname(target.destination)}; '
-                                                        f'cp build/target/{target.target} {target.destination}', 
-                                    [target for target in dag if target.build == 'application']))),
+                                     f'cp build/target/{target.target} {target.destination}', 
+                                     [target for target in dag if target.build == 'application']))),
                 make.MakeRule('image', body=[Architecture(arch).getbootboot,
-                                             'echo "kernel=sbin/cpu_driver\\n" >> boot/BOOTBOOT/CONFIG',
-                                             '(cd initrd; tar -czf ../boot/BOOTBOOT/INITRD *)',
-                                             'cp /usr/share/ovmf/OVMF.fd .',
-                                             f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=4',
-                                             f'mkfs.fat fakix_{arch}_image',
-                                             f'mcopy -i fakix_{arch}_image -s boot/* ::']),
+                              'echo "kernel=sbin/cpu_driver\\n" >> boot/BOOTBOOT/CONFIG',
+                              '(cd initrd; tar -czf ../boot/BOOTBOOT/INITRD *)',
+                              'cp /usr/share/ovmf/OVMF.fd .',
+                              f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=4',
+                              f'mkfs.fat fakix_{arch}_image',
+                              f'mcopy -i fakix_{arch}_image -s boot/* ::']),
                 make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*']),
                 make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} '
                                             f'-drive format=raw,file=fakix_{arch}_image -nographic'])]
     
-    _, *_ = map(funcy.rpartial(PykeTransform.bind, dag, arch), dag)
-
+    *_, = map(funcy.rpartial(PykeTransform.bind, dag, arch), dag)
     return map(str, itertools.chain(get_default_rules(), get_arch_recipes(arch, dag))), frozenset(f'/sbin/{pt.target}' for pt in dag if pt.build == 'application')
