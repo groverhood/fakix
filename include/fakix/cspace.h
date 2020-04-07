@@ -12,10 +12,11 @@ typedef uint32_t capaddr_t;
 /* Index into a CNode. */
 typedef size_t capslot_t;
 
-/* CNode handle. */
-typedef vaddr_t cnode_t;
+/* CNode handle. Negative address indicates an L1 CNode. */
+typedef uint64_t cnode_t;
 
 #define CNODE_NULL ((cnode_t)0)
+#define CAP_NULL ((capaddr_t)0)
 
 #define CAP_L1_BITS 9
 #define CAP_L2_BITS 9
@@ -29,22 +30,6 @@ typedef vaddr_t cnode_t;
 #define CAP_ADDR(cnode, slot) ((capaddr_t)(((cnode) << CAP_L2_BITS) | (slot)))
 
 /* Well-known capabilities and cnodes. */
-
-extern cnode_t cnode_task;
-extern cnode_t cnode_slot;
-
-extern capaddr_t cap_vspace_root; /* Root page table. PML4 in x86_64, ARMl1, etc. */
-extern capaddr_t cap_tcb; /* Task control block. */
-extern capaddr_t cap_init_pages; /* Pages used to bootstrap a process. */
-extern capaddr_t cap_args_page; /* Page containing argv[]. */
-extern capaddr_t cap_task;
-
-extern capaddr_t cap_cspace_root; /* L1 CNode capability. */
-extern capaddr_t cap_slot_alloc_0;
-extern capaddr_t cap_slot_alloc_1;
-extern capaddr_t cap_slot_alloc_2;
-
-#define CAP_NULL ((capaddr_t)0)
 
 #define CNODE_TASK 0
 #define CNODE_TASK_SLOT_VSPACE_ROOT 1

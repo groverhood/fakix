@@ -3,11 +3,13 @@
 #include <elf/elf.h>
 #include <cap/caps.h>
 #include <log/print.h>
+#include <cap/entry.h>
 #include <attributes.h>
 #include <sys/vtable.h>
 #include <cap/invoke.h>
 #include <fakix/vspace.h>
 #include <init/startup.h>
+#include <sys/task_manager.h>
 #include <bootboot/bootboot.h>
 #include <fakix/init/initcaps.h>
 
@@ -20,6 +22,7 @@ typedef struct file {
 
 static file_t tar_initrd(unsigned char *initrd_p, char *kernel);
 static struct capability *alloc_init_cap(void);
+static void print_mmap_ent(MMapEnt *mm);
 
 static inline errval_t sys_default(void)
 {
@@ -35,6 +38,8 @@ void *syscall_table[SYS_COUNT] = {
     [SYS_COPY_CAP] = &caps_copy,
     [SYS_MAP_CAP] = &caps_vmap
 };
+
+char print_buffer[VSPACE_BASE_PAGE_SIZE];
 
 void start(struct bootinfo *bi)
 {
@@ -62,14 +67,15 @@ void start(struct bootinfo *bi)
     caps_write_cap(l1cnode, CAP_INIT_ACPI_BASE, acpi_cnode);
     caps_write_cap(l1cnode, CAP_ADDR(CNODE_TASK, 0), task_cnode);
 
-    kernel_log("initialized init L1/L2 capabilities, onto creating ramcaps\n");
+    KERNEL_MSG("initialized init L1/L2 capabilities, onto creating ramcaps");
 
     capaddr_t ramcap = CAP_INIT_RAM_BASE;
     capaddr_t devcap = CAP_INIT_DEV_BASE;
     capaddr_t acpicap = CAP_INIT_ACPI_BASE;
     MMapEnt *mm = &bootboot.mmap;
+    uint32_t size = 128;
 
-    while (MMapEnt_Ptr(mm) != 0) {
+    while (size != bootboot.size) {
         switch (MMapEnt_Type(mm)) {
             case MMAP_FREE: {
                 struct capability *ram_capability = alloc_init_cap();
@@ -81,15 +87,57 @@ void start(struct bootinfo *bi)
                 caps_write_cap(ram_cnode, ramcap, ram_capability);
             } break;
         }
+        size += sizeof *mm;
         mm++;
     }
 
-    kernel_log("initialized ramcaps, now creating init task\n");
+    bi->ramcap_count = (ramcap - CAP_INIT_RAM_BASE);
+    bi->devcap_count = (devcap - CAP_INIT_DEV_BASE);
+    bi->acpicap_count = (acpicap - CAP_INIT_ACPI_BASE);
 
-    file_t init = tar_initrd((uint8_t *)bootboot.initrd_ptr, "sbin/init");
-    Elf64_Ehdr *ehdr = (Elf64_Ehdr *)init.ptr;
+    KERNEL_MSG("initialized ramcaps, now creating init task");
+    
+    
     
     while (1) asm("");
+}
+
+errval_t task_create_from_ramdisk(void *buf, size_t buflen, struct capability *l1cnode, 
+                                  uint8_t *rd, const char *rdname, struct capability *ret_cap)
+{
+    if (buflen != (1 << TASK_BITS)) {
+        return -1;
+    }
+
+    paddr_t base;
+    errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)buf, &base);
+    if (err_is_fail(err)) {
+        return err;
+    }
+    
+    
+    err = task_create(buf, buflen, l1cnode, ret_cap);
+    if (err_is_fail(err)) {
+        return err;
+    }
+
+    struct task_manager *tm = buf;
+    tcb_handle_t handle = tm->tcb;
+    struct tcb_generic_shared *tcb = tcb_get_generic_shared(handle);
+
+    file_t elf = tar_initrd(rd, (char *)rdname);
+    if (elf.ptr == NULL) {
+        
+    }
+
+    Elf64_Ehdr *hdr = (Elf64_Ehdr *)elf.ptr;
+}
+
+static void print_mmap_ent(MMapEnt *mm)
+{
+    
+    KERNEL_MSG("MMapEnt {\n  %llx\n  %llx\n  %llx\n}", MMapEnt_Type(mm), 
+                MMapEnt_Ptr(mm), MMapEnt_Size(mm));
 }
 
 static struct capability *alloc_init_cap(void)
@@ -148,7 +196,7 @@ static file_t tar_initrd(unsigned char *initrd_p, char *kernel)
     k = strlena((unsigned char *)kernel);
     while (!memcmp(ptr + 257, "ustar", 5)) {
         int fs = oct2bin(ptr + 0x7c, 11);
-        if (!memcmp(ptr, kernel, k + 1)){
+        if (!memcmp(ptr, kernel, k)){
             ret.size = fs;
             ret.ptr = (uint8_t *)(ptr + 512);
             return ret;

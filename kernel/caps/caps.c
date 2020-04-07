@@ -1,7 +1,9 @@
 #include <cap/caps.h>
+#include <cap/entry.h>
 #include <util/arith.h>
 #include <sys/vtable.h>
 #include <fakix/errtype.h>
+#include <sys/task_manager.h>
 #include <fakix/tcb_current.h>
 
 errval_t caps_create_l1_cnode(void *table, size_t buflen, struct capability *ret_cap)
@@ -59,22 +61,46 @@ errval_t caps_create_l2_cnode(void *table, size_t buflen, struct capability *ret
 errval_t caps_create(void *table, size_t buflen, enum cap_object_type objtype,
                      caprights_t rights, struct capability *ret_cap)
 {
-    switch (objtype) {
+    if (buflen % VSPACE_BASE_PAGE_SIZE != 0) {
+        return CAP_ERR_UNALIGNED_OFFSET;
+    }
 
+    if (table == NULL) {
+        if (ret_cap->base == 0 || ret_cap->objtype != CAP_OBJECT_FRAME) {
+            return CAP_ERR_INVALID_TYPE_OPERATION;
+        }
+
+        paddr_t base;
+        errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)table, &base);
+        if (err_is_fail(err)) {
+            return err;
+        }
+
+        ret_cap->base = base;
+        ret_cap->size = buflen;
+        ret_cap->rights = rights;
+        ret_cap->objtype = objtype;
+    }
+
+    uint8_t *buf = (uint8_t *)ret_cap->base;
+    size_t i;
+    for (i = 0; i < buflen; ++i) {
+        buf[i] = 0;
     }
 
     return ERR_OK;
 }
 
-static struct capability *get_root_cap(void)
-{
-    return (struct capability *)tcb_get_generic_shared(tcb_current())->l1cnode;
-}
-
 errval_t caps_create_entry(void *table, size_t buflen, enum cap_object_type objtype,
-                           caprights_t rights, struct capability *ret_cap)
+                           caprights_t rights, capaddr_t dest)
 {
     errval_t err;
+    struct capability *ret_cap;
+    err = caps_lookup_cap(task_current->root, dest, objtype != CAP_OBJECT_L2,
+                          &ret_cap);
+    if (err_is_fail(err)) {
+        return err;
+    }
 
     switch (objtype) {
         case CAP_OBJECT_L1:
@@ -91,8 +117,10 @@ errval_t caps_create_entry(void *table, size_t buflen, enum cap_object_type objt
                 err = caps_create_l2_cnode(table, buflen, ret_cap);
             }
         break;
+        case CAP_OBJECT_TASK:
+            err = task_create(table, buflen, task_current->root, ret_cap);
+        break;
         case CAP_OBJECT_FRAME:
-        case CAP_OBJECT_TCB:
         case CAP_OBJECT_VTL1:
         case CAP_OBJECT_VTL2:
         case CAP_OBJECT_VTL3:
@@ -198,12 +226,16 @@ errval_t caps_destroy(struct capability *dest)
     return ERR_OK;
 }
 
-errval_t caps_lookup_cap(struct capability *cnode, capaddr_t caddr, struct capability **ret_cap)
+errval_t caps_lookup_cap(struct capability *cnode, capaddr_t caddr, bool exhaust,
+                         struct capability **ret_cap)
 {
     errval_t err = ERR_OK;
-    struct capability **caps = (struct capability **)(cnode->base + VSPACE_KERN_BASE);
+    struct capability **caps = (struct capability **)(cnode->base);
     if (cnode->objtype == CAP_OBJECT_L1) {
         *ret_cap = caps[CAP_L1_OFFSET(caddr)];
+        if (exhaust) {
+            *ret_cap = ((struct capability **)cnode->base)[CAP_L2_OFFSET(caddr)];
+        }
     } else if (cnode->objtype == CAP_OBJECT_L2) {
         *ret_cap = caps[CAP_L2_OFFSET(caddr)];
     } else {
@@ -215,7 +247,7 @@ errval_t caps_lookup_cap(struct capability *cnode, capaddr_t caddr, struct capab
 errval_t caps_write_cap(struct capability *cnode, capaddr_t caddr, struct capability *cap)
 {
     errval_t err = ERR_OK;
-    struct capability **caps = (struct capability **)(cnode->base + VSPACE_KERN_BASE);
+    struct capability **caps = (struct capability **)(cnode->base);
     if (cnode->objtype == CAP_OBJECT_L1) {
         caps[CAP_L1_OFFSET(caddr)] = cap;
     } else if (cnode->objtype == CAP_OBJECT_L2) {

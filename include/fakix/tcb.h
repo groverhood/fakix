@@ -7,6 +7,8 @@
 #include <fakix/paging.h>
 #include <fakix/tcb_arch.h>
 
+#define TASK_BITS 16
+
 typedef vaddr_t tcb_handle_t;
 
 struct thread;
@@ -19,7 +21,6 @@ struct tcb_generic_shared {
     bool disabled;
     struct tcb_arch_shared arch_state;
     vaddr_t pc;
-    cnode_t l1cnode;
 };
 
 /* User-only TCB struct */

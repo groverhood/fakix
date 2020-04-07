@@ -26,13 +26,6 @@ static struct idt_ent *get_idt_base(void)
 void isr_common_stub(ivec_t ivec)
 {
     struct int_redirect *redirect_table = get_iredir_base();
-    tcb_handle_t cur = sys_task_on_core(sys_core_id());
-    tcb_handle_t next = redirect_table[ivec].tcb;
-    upcall_addr_t uaddr = redirect_table[ivec].uaddr;
-
-    if (cur == next) {
-        
-    }
 
     ireturn();
 }

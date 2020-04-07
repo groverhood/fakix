@@ -16,7 +16,7 @@ enum cap_object_type {
     CAP_OBJECT_L1, /* L1 cnode table. */
     CAP_OBJECT_L2, /* L2 cnode table. */
     CAP_OBJECT_PHYSICAL, /* Physical address region. */
-    CAP_OBJECT_TCB, /* Task control block. */
+    CAP_OBJECT_TASK, /* Generic task. */
     CAP_OBJECT_RAM, /* Raw, untyped RAM. */
     CAP_OBJECT_FRAME, /* Frame to be mapped into virtual memory. */
     CAP_OBJECT_DEVICE, /* MMIO region. */

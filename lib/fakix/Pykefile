@@ -4,6 +4,7 @@
         'arch': 'x86_64',
         'build': 'object',
         'includes': ['{source_root}/include', '{source_root}/include/arch/x86_64'],
-        'c_files': ['capabilities.c', 'start.c']
+        'c_files': ['capabilities.c', 'start.c'],
+        'c_flags': ['-fPIC']
     }
 ]

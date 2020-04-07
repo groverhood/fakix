@@ -6,4 +6,9 @@
 typedef uintptr_t vaddr_t;
 typedef uintptr_t paddr_t;
 
+#define PRIuVADDR "llu"
+#define PRIxVADDR "llx"
+#define PRIuPADDR "llu"
+#define PRIxPADDR "llx"
+
 #endif
