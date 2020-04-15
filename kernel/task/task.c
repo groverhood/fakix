@@ -21,6 +21,10 @@ errval_t task_create(void *buf, size_t buflen, struct capability *l1cnode,
     task->self = ret_cap;
     task->root = l1cnode;
 
+    struct tcb_generic_shared *tcb = tcb_get_generic_shared(task->tcb); 
+    tcb->disabled = true;
+    tcb->fpu_trap = true;
+
     ret_cap->base = base;
     ret_cap->size = buflen;
     ret_cap->rights = CAP_RIGHTS_RDWR;

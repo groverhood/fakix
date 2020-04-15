@@ -10,8 +10,6 @@ struct tcb_arch_shared {
     uint16_t cs, ds;
     uint16_t fs, gs;
     regval_t flags;
-
-    size_t *pml4;
 };
 
 struct tcb_arch {

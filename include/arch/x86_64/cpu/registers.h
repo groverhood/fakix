@@ -47,6 +47,9 @@ union registers {
         regval_t rsvd6;
         regval_t rsvd7;
     } syscall_args;
+
+    _Static_assert(sizeof(struct system_call) == sizeof(struct named_registers), 
+                   "Improper number of fields in union structs [union registers]");
 };
 
 

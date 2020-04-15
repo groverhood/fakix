@@ -58,9 +58,9 @@ void start(struct bootinfo *bi)
     struct capability *task_cnode = alloc_init_cap();
 
     caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
-    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
-    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
-    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, ram_cnode);
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, dev_cnode);
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, acpi_cnode);
+    caps_create_l2_cnode(init_ramcap_buffer, VSPACE_BASE_PAGE_SIZE, task_cnode);
 
     caps_write_cap(l1cnode, CAP_INIT_RAM_BASE, ram_cnode);
     caps_write_cap(l1cnode, CAP_INIT_DEV_BASE, dev_cnode);
@@ -70,7 +70,6 @@ void start(struct bootinfo *bi)
     KERNEL_MSG("initialized init L1/L2 capabilities, onto creating ramcaps");
 
     capaddr_t ramcap = CAP_INIT_RAM_BASE;
-    capaddr_t devcap = CAP_INIT_DEV_BASE;
     capaddr_t acpicap = CAP_INIT_ACPI_BASE;
     MMapEnt *mm = &bootboot.mmap;
     uint32_t size = 128;
@@ -92,13 +91,18 @@ void start(struct bootinfo *bi)
     }
 
     bi->ramcap_count = (ramcap - CAP_INIT_RAM_BASE);
-    bi->devcap_count = (devcap - CAP_INIT_DEV_BASE);
     bi->acpicap_count = (acpicap - CAP_INIT_ACPI_BASE);
 
     KERNEL_MSG("initialized ramcaps, now creating init task");
     
+    static char task_buffer[1 << TASK_BITS];
+    struct capability *init_task_cap = alloc_init_cap();
+    task_create_from_ramdisk(task_buffer, 1 << TASK_BITS, l1cnode, bootboot.initrd_ptr, "sbin/init", init_task_cap);
+    caps_write_cap(l1cnode, CAP_TASK_TASK, init_task_cap);
+
+    task_context_switch((struct task_manager *)init_task_cap->base);
     
-    
+    KERNEL_MSG("ERROR!!! Returned from context switch to /sbin/init, spinning");
     while (1) asm("");
 }
 
@@ -108,29 +112,24 @@ errval_t task_create_from_ramdisk(void *buf, size_t buflen, struct capability *l
     if (buflen != (1 << TASK_BITS)) {
         return -1;
     }
-
-    paddr_t base;
-    errval_t err = vtable_get_mapping(vtable_current(), (vaddr_t)buf, &base);
-    if (err_is_fail(err)) {
-        return err;
-    }
     
-    
-    err = task_create(buf, buflen, l1cnode, ret_cap);
+    errval_t err = task_create(buf, buflen, l1cnode, ret_cap);
     if (err_is_fail(err)) {
         return err;
     }
 
     struct task_manager *tm = buf;
-    tcb_handle_t handle = tm->tcb;
-    struct tcb_generic_shared *tcb = tcb_get_generic_shared(handle);
-
     file_t elf = tar_initrd(rd, (char *)rdname);
     if (elf.ptr == NULL) {
         
     }
 
-    Elf64_Ehdr *hdr = (Elf64_Ehdr *)elf.ptr;
+    err = task_init((Elf64_Ehdr *)elf.ptr, tm, &alloc_init_cap);
+    if (err_is_fail(err)) {
+        return err;
+    }
+
+    return err;
 }
 
 static void print_mmap_ent(MMapEnt *mm)
