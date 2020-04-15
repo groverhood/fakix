@@ -19,10 +19,12 @@
         'target': 'cpu_driver_rpi4b',
         'build': 'application',
         'arch': 'aarch64',
+        'destination': '/sbin/cpu_driver',
         'includes': ['include', '{source_root}/include', 'include/arch/aarch64',
                      '{source_root}/include/arch/aarch64'],
         'c_flags': ['-O2', '-DMACH_RPI4B'],
-        'c_files': ['arch/aarch64/rpi4b/serial_rpi4b.c', 'arch/aarch64/local_start.c'],
+        'c_files': ['arch/aarch64/rpi4b/serial_rpi4b.c', 'arch/aarch64/local_start.c',
+                    'log/print.c'],
         'l_file': 'fakix_link.ld',
     }
 ]

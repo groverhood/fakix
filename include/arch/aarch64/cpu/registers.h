@@ -1,5 +1,5 @@
-#ifndef ARCH_ARM64_CPU_REGISTERS_H
-#define ARCH_ARM64_CPU_REGISTERS_H 1
+#ifndef ARCH_AARCH64_CPU_REGISTERS_H
+#define ARCH_AARCH64_CPU_REGISTERS_H 1
 
 #include <stdint.h>
 
@@ -52,6 +52,10 @@ union registers {
         regval_t arg3;
         regval_t arg4;
         regval_t arg5;
+        regval_t unused0;
+        regval_t unused1;
+        regval_t sysn;
+        regval_t unused2[23];
     } syscall_args;
 
     _Static_assert(sizeof(struct system_call) == sizeof(struct named_registers), 

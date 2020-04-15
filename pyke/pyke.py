@@ -35,8 +35,8 @@ class Architecture(object):
         }[arch_type]
 
         self.arch_type = arch_type
-        self.compiler = f'{prefix}gcc -c -nostdlib'
-        self.linker = f'{prefix}ld -nostdlib -nostartfiles -Lbuild/target'
+        self.compiler = f'{prefix}gcc' + (' -c -nostdlib' if arch_type != 'self' else '')
+        self.linker = f'{prefix}ld' + (' -nostdlib -nostartfiles -Lbuild/target' if arch_type != 'self' else '')
         self.assember = f'{prefix}as'
         self.preprocessor = f'{prefix}cpp'
         self.getbootboot = {
@@ -84,7 +84,7 @@ class PykeTransform(object):
         self.architectures = Architecture.generate_arch_list(*([arch] if not isinstance(arch, list) else arch))
         self.selected_arch: Architecture = None
         self.target = target
-        self.destination = f'initrd{destination}' if destination is not None else 'initrd/'
+        self.destination = (f'tools/{destination}' if destination is not None else 'tools/') if build == 'tool' else (f'initrd{destination}' if destination is not None else 'initrd/')
         self.commands = commands
         self.c_files = list(map(bound_format, c_files))
         self.s_files = list(map(bound_format, s_files))
@@ -191,7 +191,7 @@ def transform(source_root: str, *directories: Iterable[str]) -> List[PykeTransfo
 
 def build_graph(arch: str, transform_list: List[PykeTransform]):
     dependency_graph = networkx.DiGraph()
-    arch_transforms = list(filter(lambda tr: arch in tr.architectures, transform_list))
+    arch_transforms = list(filter(lambda tr: arch in tr.architectures or tr.build == 'tool', transform_list))
     transforms = { tr.target: tr for tr in arch_transforms }
     dependency_graph.add_nodes_from(arch_transforms)
     for tr in arch_transforms:
@@ -202,11 +202,9 @@ def build_graph(arch: str, transform_list: List[PykeTransform]):
 def generate_makefile(arch: str, dag: networkx.DiGraph):
     def get_arch_recipes(arch: str, dag: networkx.DiGraph):
         """Get all recipes compatible with the desired build architecture"""
-        return filter(funcy.compose(funcy.rpartial(operator.__contains__, arch),
-                        funcy.rpartial(getattr, 'architectures')), 
-                        filter(funcy.compose(functools.partial(operator.__eq__, 0),
+        return filter(funcy.compose(functools.partial(operator.__eq__, 0),
                             dag.in_degree), 
-                            dag.nodes))
+                            dag.nodes)
 
     def get_default_rules():
         return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),

@@ -1,5 +1,4 @@
 
-#include <elf/format.h>
 #include <fakix/vspace.h>
 
 ENTRY(_start)

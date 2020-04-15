@@ -5,6 +5,8 @@
 #include <fakix/addr.h>
 #include <fakix/cspace.h>
 #include <fakix/paging.h>
+#include <cpu/registers.h>
+#include <cpu/fpu_state.h>
 #include <fakix/tcb_arch.h>
 
 #define TASK_BITS 16
@@ -40,7 +42,7 @@ static inline struct tcb_generic *tcb_get_generic(tcb_handle_t tcb)
 
 static inline struct tcb_generic_shared *tcb_get_generic_shared(tcb_handle_t tcb)
 {
-    return &tcb_get_generic(tcb)->shared;
+    return (struct tcb_generic_shared *)tcb;
 }
 
 static inline struct tcb_arch *tcb_get_arch(tcb_handle_t tcb)
