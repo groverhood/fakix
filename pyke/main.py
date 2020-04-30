@@ -23,7 +23,7 @@ def main(args: List[str]):
 
     os.system('rm -rf ./*')
 
-    noentry = frozenset(['.git', 'cross', 'pyke', 'tools', 'errors', 'include'])
+    noentry = frozenset(['.git', 'cross', 'pyke', 'errors', 'include'])
     caneval = funcy.compose(operator.__not__, noentry.__contains__)
     transforms = pyke.transform(res.source, *filter(caneval, os.listdir(res.source)))
     dep_graph = pyke.build_graph(res.arch, transforms)
