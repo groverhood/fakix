@@ -1,9 +1,4 @@
-build
-cross
-root 
-boot/image/sbin/*
-!boot/image/sbin/.keep
-
+kaiji
 __pycache__
 
 .vscode
@@ -14,3 +9,7 @@ __pycache__
 *.generated.*
 *.img
 *.dump
+
+\#*\#
+*~
+.dir-locals.el

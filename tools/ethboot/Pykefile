@@ -1,0 +1,8 @@
+[
+    {
+        'target': 'ethboot',
+        'arch': 'self',
+        'build': 'tool',
+        'c_files': ['main.c']
+    }
+]

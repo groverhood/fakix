@@ -24,7 +24,7 @@
                      '{source_root}/include/arch/aarch64'],
         'c_flags': ['-O2', '-DMACH_RPI4B'],
         'c_files': ['arch/aarch64/rpi4b/serial_rpi4b.c', 'arch/aarch64/local_start.c',
-                    'log/print.c'],
+                    'log/print.c', 'arch/aarch64/core.c'],
         'l_file': 'fakix_link.ld',
     }
 ]

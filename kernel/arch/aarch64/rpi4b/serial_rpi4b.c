@@ -1,5 +1,10 @@
 #include <log/serial.h>
-#include <io/mmio_rpi4b.h>
+#include <io/mmio.h>
+
+errval_t serial_init(void)
+{
+    /* TODO: program GPIO pins 14 and 15 to TxD and RxD, respectively (ALT0) */
+}
 
 void serial_putc(int c)
 {

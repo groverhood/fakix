@@ -1,16 +1,12 @@
-#ifndef KERNEL_ARCH_AARCH64_IO_MMIO_RPI4B_H
-#define KERNEL_ARCH_AARCH64_IO_MMIO_RPI4B_H 1
+#ifndef KERNEL_ARCH_AARCH64_IO_MMIO_RPI4B_MU_H
+#define KERNEL_ARCH_AARCH64_IO_MMIO_RPI4B_MU_H 1
 
-#define __MFENCE__ asm volatile ("dmb ishld")
-
-#define MMIO_RPI4B_LEGACY_PERIPHERAL_BASE 0x7c000000
-#define MMIO_RPI4B_PERIPHERAL_BASE       0x47c000000
-#define MMIO_RPI4B_LOCAL_PERIPHERAL_BASE 0x4c0000000
-#define MMIO_RPI4B_PCIE_BASE             0x600000000
+#include <mfence.h>
+#include <io/mmio_rpi4b_peripherals.h>
 
 /* Auxiliary registers (UART1M SPI1 & SPI2). */
 
-#define MMIO_RPI4B_AUX_BASE 0x47e215000
+#define MMIO_RPI4B_AUX_BASE 0x7e215000
 #define MMIO_RPI4B_AUX_IRQ 0x00
 #define MMIO_RPI4B_AUX_ENABLES 0x04
 #define MMIO_RPI4B_AUX_MU_IO_REG 0x40
@@ -65,43 +61,43 @@ enum mmio_rpi4b_aux_dev {
 
 static inline bool mmio_rpi4b_aux_irq_pending(paddr_t aux_base, enum mmio_rpi4b_aux_dev dev)
 {
-    __MFENCE__;
+    mfence();
     return (*((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_IRQ) & (1 << dev)); /* Coerce to bool. */
 }
 
 static inline void mmio_rpi4b_aux_enable(paddr_t aux_base, enum mmio_rpi4b_aux_dev dev)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_ENABLES) |= (1 << dev);
 }
 
 static inline void mmio_rpi4b_aux_disable(paddr_t aux_base, enum mmio_rpi4b_aux_dev dev)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_ENABLES) &= ~(1 << dev);
 }
 
 static inline uint8_t mmio_rpi4b_aux_mu_io_reg_rd(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     return *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_IO_REG);
 }
 
 static inline void mmio_rpi4b_aux_mu_io_reg_wr(paddr_t aux_base, uint8_t b)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_IO_REG) = b;
 }
 
 static inline void mmio_rpi4b_aux_mu_ier_reg_set(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_IER_REG) = 1;
 }
 
 static inline void mmio_rpi4b_aux_mu_ier_reg_clear(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_IER_REG) = 0;
 }
 
@@ -124,14 +120,14 @@ MMIO_WORD_ASSERT(struct mmio_rpi4b_aux_mu_iir_reg);
 
 static inline bool mmio_rpi4b_aux_iir_reg_interrupt_pending(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_IIR_REG reg = (MMIO_RPI4_AUX_MU_IIR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     return reg->interrupt_pending;
 }
 
 static inline int mmio_rpi4b_aux_iir_reg_interrupt_id_bits(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_IIR_REG reg = (MMIO_RPI4_AUX_MU_IIR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     return reg->interrupt_id_fifo_clear;
 }
@@ -143,7 +139,7 @@ enum mmio_rpi4b_fifo {
 
 static inline void mmio_rpi4b_aux_iir_reg_clear_fifo_bits(paddr_t aux_base, enum mmio_rpi4b_fifo id)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_IIR_REG reg = (MMIO_RPI4_AUX_MU_IIR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     reg->interrupt_id_fifo_clear &= ~(1 << id);
 }
@@ -157,7 +153,7 @@ enum mmio_rpi4b_interrupt_id {
 
 static inline enum mmio_rpi4b_interrupt_id mmio_rpi4b_aux_iir_read_interrupt_id_bits(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_IIR_REG reg = (MMIO_RPI4_AUX_MU_IIR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     return reg->interrupt_id_fifo_clear;
 }
@@ -180,47 +176,47 @@ enum mmio_rpi4b_aux_mu_lcr_datasize {
 
 static inline void mmio_rpi4b_aux_mu_lcr_datasize_wr(paddr_t aux_base, enum mmio_rpi4b_aux_mu_lcr_datasize datasize)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LCR_REG reg = (MMIO_RPI4_AUX_MU_LCR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     reg->data_size = datasize;
 }
 
 static inline enum mmio_rpi4b_aux_mu_lcr_datasize mmio_rpi4b_aux_mu_lcr_datasize_rd(paddr_t aux_base, enum mmio_rpi4b_aux_mu_lcr_datasize datasize)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LCR_REG reg = (MMIO_RPI4_AUX_MU_LCR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     return reg->data_size;
 }
 
 static inline void mmio_rpi4b_aux_mu_lcr_brk_wr(paddr_t aux_base, bool brk)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LCR_REG reg = (MMIO_RPI4_AUX_MU_LCR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     reg->brk = brk;
 }
 
 static inline bool mmio_rpi4b_aux_mu_lcr_brk_rd(paddr_t aux_base, bool brk)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LCR_REG reg = (MMIO_RPI4_AUX_MU_LCR_REG)(aux_base + MMIO_RPI4B_AUX_MU_IIR_REG);
     return reg->brk;
 }
 
 static inline bool mmio_rpi4b_aux_mu_mcr_reg_uart1_rts_low(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     return (*((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_MCR_REG) & (1 << 1));
 }
 
 static inline bool mmio_rpi4b_aux_mu_mcr_reg_uart1_rts_high(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     return !(*((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_MCR_REG) & (1 << 1));
 }
 
 static inline void mmio_rpi4b_aux_mu_mcr_reg_uart1_rts_wr(paddr_t aux_base, bool hl)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_MCR_REG) = ((int)hl << 1);
 }
 
@@ -239,35 +235,35 @@ MMIO_WORD_ASSERT(struct mmio_rpi4b_aux_mu_lsr_reg);
 
 static inline bool mmio_rpi4b_aux_mu_lsr_reg_data_ready(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LSR_REG reg = (MMIO_RPI4_AUX_MU_LSR_REG)(aux_base + MMIO_RPI4B_AUX_MU_LSR_REG);
     return reg->data_ready;
 }
 
 static inline bool mmio_rpi4b_aux_mu_lsr_reg_recv_overrun_clear(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LSR_REG reg = (MMIO_RPI4_AUX_MU_LSR_REG)(aux_base + MMIO_RPI4B_AUX_MU_LSR_REG);
     return reg->receiver_overrun;
 }
 
 static inline bool mmio_rpi4b_aux_mu_lsr_reg_transmitter_empty(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LSR_REG reg = (MMIO_RPI4_AUX_MU_LSR_REG)(aux_base + MMIO_RPI4B_AUX_MU_LSR_REG);
     return reg->transmitter_empty;
 }
 
 static inline bool mmio_rpi4b_aux_mu_lsr_reg_transmitter_idle(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_LSR_REG reg = (MMIO_RPI4_AUX_MU_LSR_REG)(aux_base + MMIO_RPI4B_AUX_MU_LSR_REG);
     return reg->transmitter_idle;
 }
 
 static inline bool mmio_rpi4b_aux_mu_msr_reg_cts_get_status(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     /* Bit 4 == CTS status bit. 
        This bit is the inverse of the UART1_CTS input. Thus:
        If set the UART1_CTS pin is low;
@@ -277,19 +273,19 @@ static inline bool mmio_rpi4b_aux_mu_msr_reg_cts_get_status(paddr_t aux_base)
 
 static inline void mmio_rpi4b_aux_mu_msr_reg_cts_set_status(paddr_t aux_base, bool status)
 {
-    __MFENCE__;
+    mfence();
     *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_MSR_REG) = (int)status << 4;
 }
 
 static inline uint8_t mmio_rpi4b_aux_mu_scratch_read(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     return *((volatile uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_MSR_REG);
 }
 
 static inline uint8_t mmio_rpi4b_aux_mu_scratch_write(paddr_t aux_base, uint8_t b)
 {
-    __MFENCE__;
+    mfence();
     volatile uint8_t *scratch = ((uint8_t *)aux_base + MMIO_RPI4B_AUX_MU_MSR_REG);
     uint8_t old = *scratch;
     *scratch = b;
@@ -312,42 +308,42 @@ MMIO_WORD_ASSERT(struct mmio_rpi4b_aux_mu_cntl_reg);
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_receiver_enable(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->receiver_enable = true;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_receiver_disable(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->receiver_enable = false;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_transmitter_enable(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->transmitter_enable = true;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_transmitter_disable(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->transmitter_enable = false;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_stop_transmitter_on_cts_deassert(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->rts_deassert_autoflow = true;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_ignore_cts_deassert(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->rts_deassert_autoflow = false;
 }
@@ -361,42 +357,42 @@ enum mmio_rpi4b_rts_auto_flow_level {
 
 static inline enum mmio_rpi4b_rts_auto_flow_level mmio_rpi4b_aux_mu_cntl_reg_get_rts_auto_flow_level(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     return reg->rts_auto_flow;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_set_rts_auto_flow_level(paddr_t aux_base, enum mmio_rpi4b_rts_auto_flow_level level)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->rts_auto_flow = level;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_rts_auto_flow_assert_level_set_low(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->rts_assert_level = 1;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_rts_auto_flow_assert_level_set_high(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->rts_assert_level = 0;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_cts_auto_flow_assert_level_set_low(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->cts_assert_level = 1;
 }
 
 static inline void mmio_rpi4b_aux_mu_cntl_reg_cts_auto_flow_assert_level_set_high(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_CNTL_REG reg = (MMIO_RPI4_AUX_MU_CNTL_REG)(aux_base + MMIO_RPI4B_AUX_MU_CNTL_REG);
     reg->cts_assert_level = 0;
 }
@@ -424,97 +420,97 @@ MMIO_WORD_ASSERT(struct mmio_rpi4b_aux_mu_stat_reg);
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_symbol_available(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->symbol_available;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_space_available(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->space_available;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_receiver_idle(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->receiver_idle;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_transmitter_idle(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->transmitter_idle;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_receiver_overrun(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->receiver_overrun;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_transmitter_full(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->transmitter_full;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_rts_status(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->rts_status;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_cts_status(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->cts_status;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_transmitter_empty(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->transmitter_empty;
 }
 
 static inline bool mmio_rpi4b_aux_mu_stat_reg_transmitter_done(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->transmitter_done;
 }
 
 static inline size_t mmio_rpi4b_aux_mu_stat_reg_receiver_symbol_count(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->receiver_symbol_count;
 }
 
 static inline size_t mmio_rpi4b_aux_mu_stat_reg_transmitter_symbol_count(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     MMIO_RPI4_AUX_MU_STAT_REG reg = (MMIO_RPI4_AUX_MU_STAT_REG)(aux_base + MMIO_RPI4B_AUX_MU_STAT_REG);
     return reg->transmitter_symbol_count;
 }
 
 static inline uint16_t mmio_rpi4b_aux_mu_baud_reg_rd(paddr_t aux_base)
 {
-    __MFENCE__;
+    mfence();
     return *(volatile uint16_t *)(aux_base + MMIO_RPI4B_AUX_MU_BAUD_REG);
 }
 
 static inline void mmio_rpi4b_aux_mu_baud_reg_wr(paddr_t aux_base, uint16_t baudrate)
 {
-    __MFENCE__;
+    mfence();
     *(volatile uint16_t *)(aux_base + MMIO_RPI4B_AUX_MU_BAUD_REG) = baudrate;
 }
 

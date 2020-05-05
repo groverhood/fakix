@@ -47,7 +47,8 @@ class Architecture(object):
         self.archive = f'{prefix}ar'
         self.qemu = {
             'x86_64': 'qemu-system-x86_64 -bios OVMF.fd',
-            'aarch64': 'qemu-system-aarch64'
+            'aarch64': 'qemu-system-aarch64',
+            'self': ''
         }[arch_type]
 
     def __str__(self):
@@ -154,7 +155,8 @@ class PykeTransform(object):
 
     def bind(self, dep_graph: networkx.DiGraph, selected_arch: str):
         self.binding_dgraph = dep_graph
-        self.selected_arch = self.architectures[self.architectures.index(selected_arch)]
+        self.selected_arch = (self.architectures[self.architectures.index(selected_arch)] 
+                                if 'self' not in self.architectures else Architecture('self'))
         return self
 
     def __str__(self):
