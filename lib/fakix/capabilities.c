@@ -9,6 +9,7 @@ typedef vaddr_t cap_handle_t;
 errval_t cnode_create(enum cap_object_type cnode_type, cnode_t *ret_cnode, 
                       capaddr_t *ret_cap)
 {
+    
     cap_handle_t cap;
     capaddr_t addr;
     void *buffer;
@@ -16,7 +17,7 @@ errval_t cnode_create(enum cap_object_type cnode_type, cnode_t *ret_cnode,
     if (cnode_type != CAP_OBJECT_L1 && cnode_type != CAP_OBJECT_L2) {
         return CAP_ERR_INVALID_TYPE_OPERATION;
     }
-
+    
     /* TODO: allocate a 4K page, a capability, a capaddr, then acquire the
        physical mapping and return it into ret_cnode. */
 
