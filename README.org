@@ -1,0 +1,35 @@
+* Fakix
+** About
+   Fakix is currently a toy operating system that ultimately aims for UEFI compatibility, POSIX compliancy through
+   spoofed system calls, and adherence to more modern standards for system and general software design. By restricting
+   the architectures to 64-bit, I personally believe this goal may be more attainable than it initially seems as the
+   only major architectures are x86-64, ARMv8/AArch64, and RISC-V, the former two I have already developed for.
+
+   Regardless, these goals are lofty, as lofty goals require comprehensive systems for achieving them in the software
+   world, and as such progress will be slow. Here is a list of my completed tasks (/italicized/ means in progress,
+   +strikethrough+ means completed):
+
+   1. +Design a build system that can easily alternate architectures and incorporate modular design+
+   2. /Write a bootloader that operates in the form of an EFI application./
+   3. Create the kernel library
+   4. Create a userspace library for system calls.
+   5. Create a POSIX library that spoofs UNIX system calls.
+
+   Given this project started months ago, progress has indeed been slow, and redesigns have been abound. With that
+   being said, I wholeheartedly intend on completing this project at least through the aforementioned task list, if not
+   further.
+
+** Building
+   Building Fakix is as simple as running the following five commands: 
+   #+BEGIN_SRC shell
+     mkdir build
+     cd build
+     /path/to/fakix/pyke/pyke.sh -s /path/to/fakix -a <arch>
+     make
+     make image
+   #+END_SRC
+
+   Afterwards, running the image on QEMU or burning it to a bootable media format is currently left to the user.
+** Contributing
+   Currently this git repo is public only for the sake of word of mouth. Forking it is fine with me, but I am not taking
+   contributions to the main repository.

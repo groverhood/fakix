@@ -29,14 +29,14 @@ class Architecture(object):
 
     def __init__(self, arch_type: str):
         prefix = {
-            'x86_64': 'x86_64-elf-',
-            'aarch64': 'aarch64-none-elf-',
+            'x86_64': 'x86_64-linux-gnu-',
+            'aarch64': 'aarch64-linux-gnu-',
             'self': ''
         }[arch_type]
 
         self.arch_type = arch_type
-        self.compiler = f'{prefix}gcc' + (' -c -nostdlib' if arch_type != 'self' else '')
-        self.linker = f'{prefix}ld' + (' -nostdlib -nostartfiles -Lbuild/target' if arch_type != 'self' else '')
+        self.compiler = f'{prefix}gcc' + (' -c -nostdlib' if arch_type != 'self' else ' -c')
+        self.linker = (f'{prefix}ld -nostdlib -nostartfiles -Lbuild/target' if arch_type != 'self' else 'gcc')
         self.assember = f'{prefix}as'
         self.preprocessor = f'{prefix}cpp'
         self.getbootboot = {
@@ -212,7 +212,7 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
         return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),
                                 list(map(lambda target: f'mkdir -p {os.path.dirname(target.destination)}; '
                                      f'cp build/target/{target.target} {target.destination}', 
-                                     [target for target in dag if target.build == 'application']))),
+                                     [target for target in dag if target.build == 'application' or target.build == 'tool']))),
                 make.MakeRule('image', body=[Architecture(arch).getbootboot,
                               'echo "kernel=sbin/cpu_driver\\n" >> boot/BOOTBOOT/CONFIG',
                               '(cd initrd; tar -czf ../boot/BOOTBOOT/INITRD *)',

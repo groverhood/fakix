@@ -1,0 +1,6 @@
+*** TODO Finish working on Kaiji
+*** TODO Finish kernel
+*** TODO Write userspace libraries for interfacing with the kernel
+*** TODO Write POSIX compatibility library
+*** TODO Write a C library
+*** TODO Implement shared library support

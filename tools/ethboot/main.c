@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
-#include <linux/if.h>
 #include <sys/stat.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -27,7 +26,7 @@
 
 static bool mode_verbose = false;
 
-/* ethboot [-v] [-i <image file or device>] [<ethernet device file>] */
+/* ethboot [-v] [-i <image file or device>] <ethernet device file> */
 int main(int argc, char *argv[])
 {
     static size_t machid_table[BOOTMAXMACHID + 1];
@@ -68,7 +67,8 @@ int main(int argc, char *argv[])
     }
 
     ethdev = argv[optind];
-    verbose_printf("opening socket");
+    verbose_printf("opening socket\n");
+    
     int dev = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
     if (dev < 0) {
         perror("socket: ");

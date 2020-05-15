@@ -4,6 +4,15 @@
 #include <log/print.h>
 #include <log/serial.h>
 
+void *memset(void *dst, int val, size_t count)
+{
+    unsigned char *pdst = dst;
+    while (count-- > 0) {
+	*pdst = val;
+    }
+    return dst;
+}
+
 void kernel_log(const char *msg)
 {
     while (*msg) {

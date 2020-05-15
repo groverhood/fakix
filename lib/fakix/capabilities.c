@@ -1,5 +1,8 @@
 #include <fakix/syscall.h>
 #include <fakix/capabilities.h>
+#include <fakix/tcb.h>
+#include <fakix/addr.h>
+#include <bootboot/bootboot.h>
 
 #define SIZEOF_CAP 32
 
@@ -9,11 +12,10 @@ typedef vaddr_t cap_handle_t;
 errval_t cnode_create(enum cap_object_type cnode_type, cnode_t *ret_cnode, 
                       capaddr_t *ret_cap)
 {
-    
     cap_handle_t cap;
     capaddr_t addr;
     void *buffer;
-
+    
     if (cnode_type != CAP_OBJECT_L1 && cnode_type != CAP_OBJECT_L2) {
         return CAP_ERR_INVALID_TYPE_OPERATION;
     }
