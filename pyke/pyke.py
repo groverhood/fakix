@@ -39,11 +39,6 @@ class Architecture(object):
         self.linker = (f'{prefix}ld -nostdlib -nostartfiles -Lbuild/target' if arch_type != 'self' else 'gcc')
         self.assember = f'{prefix}as'
         self.preprocessor = f'{prefix}cpp'
-        self.getbootboot = {
-            'x86_64': 'wget -O boot/EFI/BOOT/BOOTX64.EFI https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot.efi',
-            'aarch64': 'wget -O boot/KERNEL8.IMG https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot.img',
-            'self': ''
-        }[arch_type]
         self.archive = f'{prefix}ar'
         self.qemu = {
             'x86_64': 'qemu-system-x86_64 -bios OVMF.fd',
@@ -77,7 +72,7 @@ class PykeTransform(object):
                 build: str='application', c_files=[], c_flags=[], 
                 s_files=[], s_flags=[], includes=[], l_file=None, l_flags=[], 
                 dependencies=[], output: str=None, source_root=None,
-                local_root=None):
+                local_root=None, firmware=None):
 
         assert source_root is not None and local_root is not None
         bound_format = functools.partial(PykeTransform.__format, source_root,
@@ -97,6 +92,7 @@ class PykeTransform(object):
         self.output = output
         self.includes = ' '.join(map(funcy.compose(functools.partial(operator.__concat__, '-I'), bound_format),
                                      includes))
+        self.firmware = firmware
         self.build = build
         self.binding_dgraph: networkx.DiGraph = None
         self.generated_make = False
@@ -170,7 +166,6 @@ class PykeTransform(object):
 
 # Perform a transformation on a directory containing a Pykefile
 def transform(source_root: str, *directories: Iterable[str]) -> List[PykeTransform]:
-
     def transform_collect(directory: str):
         if source_root == directory:
             rest = []
@@ -201,7 +196,7 @@ def build_graph(arch: str, transform_list: List[PykeTransform]):
                                             for dep in tr.dependencies])
     return dependency_graph
 
-def generate_makefile(arch: str, dag: networkx.DiGraph):
+def generate_makefile(source_root: str, arch: str, dag: networkx.DiGraph):
     def get_arch_recipes(arch: str, dag: networkx.DiGraph):
         """Get all recipes compatible with the desired build architecture"""
         return filter(funcy.compose(functools.partial(operator.__eq__, 0),
@@ -209,17 +204,16 @@ def generate_makefile(arch: str, dag: networkx.DiGraph):
                             dag.nodes)
 
     def get_default_rules():
+        root, *_ = filter(lambda t: 'fakix' in t.target, get_arch_recipes(arch, dag))
         return [make.MakeRule('all', list(map(funcy.rpartial(getattr, 'target'), get_arch_recipes(arch, dag))),
                                 list(map(lambda target: f'mkdir -p {os.path.dirname(target.destination)}; '
                                      f'cp build/target/{target.target} {target.destination}', 
                                      [target for target in dag if target.build == 'application' or target.build == 'tool']))),
-                make.MakeRule('image', body=[Architecture(arch).getbootboot,
-                              'echo "kernel=sbin/cpu_driver\\n" >> boot/BOOTBOOT/CONFIG',
-                              '(cd initrd; tar -czf ../boot/BOOTBOOT/INITRD *)',
-                              'cp /usr/share/ovmf/OVMF.fd .',
-                              f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=4',
+                make.MakeRule('image', body=[
+                              '(cd initrd; tar -czf ../fakixinit.rd *)',
+                              f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=16',
                               f'mkfs.fat fakix_{arch}_image',
-                              f'mcopy -i fakix_{arch}_image -s boot/* ::']),
+                              f'mcopy -i fakix_{arch}_image -s {source_root}/firmware/{root.firmware}/* ::']),
                 make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*']),
                 make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} '
                                             f'-drive format=raw,file=fakix_{arch}_image -nographic'])]

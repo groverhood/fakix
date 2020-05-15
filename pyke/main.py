@@ -27,10 +27,9 @@ def main(args: List[str]):
     caneval = funcy.compose(operator.__not__, noentry.__contains__)
     transforms = pyke.transform(res.source, *filter(caneval, os.listdir(res.source)))
     dep_graph = pyke.build_graph(res.arch, transforms)
-    makefile, sbins = pyke.generate_makefile(res.arch, dep_graph)
+    makefile, sbins = pyke.generate_makefile(res.source, res.arch, dep_graph)
 
-    for builddir in ['build/target', 'build/obj', 'build/generated', 'boot/BOOTBOOT',
-                     'initrd', 'tools']:
+    for builddir in ['build/target', 'build/obj', 'build/generated', 'initrd', 'tools']:
         try:
             os.makedirs(builddir)
         except FileExistsError:
