@@ -9,12 +9,11 @@ typedef uint16_t boothalf_t;
 typedef uint32_t bootword_t;
 typedef uint64_t bootdouble_t;
 
-#define BOOTMAGIC 0x746f6f62
+#define BOOTMAGIC *(bootdouble_t *)((char[8]){ 'K', 'a', 'i', 'j', 'i', 'E', 'F', 'I' })
 #define BOOTMAXMACHID 255
 
 struct bootstruct {
-    bootword_t magic;
-    bootword_t mach_id;
+    bootdouble_t magic;
     bootdouble_t size;
     bootbyte_t ramdisk[0];
 } __attribute__((packed));
