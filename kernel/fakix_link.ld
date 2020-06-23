@@ -1,7 +1,7 @@
 
 #include <fakix/vspace.h>
 
-ENTRY(_start)
+ENTRY(local_start)
 SECTIONS
 {
     /* This must be defined for all architectures. */

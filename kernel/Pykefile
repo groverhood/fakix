@@ -12,7 +12,7 @@
                     'log/print.c', 'arch/x86_64/vtable.c', 'task/task.c'],
         's_files': ['arch/x86_64/sysentry.s'],
         'c_flags': ['-O2', '-mno-red-zone', '-fPIC'],
-        'l_flags': ['--no-relax']
+        'l_flags': ['--no-relax', '-e local_start']
     },
     {
         'target': 'cpu_driver_rpi4b',
@@ -21,8 +21,9 @@
         'destination': '/sbin/cpu_driver',
         'includes': ['include', '{source_root}/include', 'include/arch/aarch64',
                      '{source_root}/include/arch/aarch64'],
-        'c_flags': ['-O2', '-DMACH_RPI4B', '-fPIC'],
+        'c_flags': ['-O2', '-DMACH_RPI4B', '-fPIE'],
         'c_files': ['arch/aarch64/rpi4b/serial_rpi4b.c', 'arch/aarch64/local_start.c',
-                    'log/print.c', 'arch/aarch64/core.c']
+                    'log/print.c', 'arch/aarch64/core.c'],
+        'l_flags': ['-e local_start', '-pie', '']
     }
 ]

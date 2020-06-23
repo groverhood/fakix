@@ -24,7 +24,7 @@
    #+BEGIN_SRC shell
      mkdir build
      cd build
-     /path/to/fakix/pyke/pyke.sh -s /path/to/fakix -a <arch>
+     /path/to/fakix/pyke/pyke.sh -s /path/to/fakix -a arch
      make
      make image
    #+END_SRC

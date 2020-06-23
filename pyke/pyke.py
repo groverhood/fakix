@@ -36,7 +36,7 @@ class Architecture(object):
 
         self.arch_type = arch_type
         self.compiler = f'{prefix}gcc' + (' -c -nostdlib' if arch_type != 'self' else ' -c')
-        self.linker = (f'{prefix}ld -nostdlib -nostartfiles -Lbuild/target' if arch_type != 'self' else 'gcc')
+        self.linker = (f'{prefix}gcc -nostdlib -nostartfiles -Lbuild/target' if arch_type != 'self' else 'gcc')
         self.assember = f'{prefix}as'
         self.preprocessor = f'{prefix}cpp'
         self.archive = f'{prefix}ar'
@@ -210,10 +210,11 @@ def generate_makefile(source_root: str, arch: str, dag: networkx.DiGraph):
                                      f'cp build/target/{target.target} {target.destination}', 
                                      [target for target in dag if target.build == 'application' or target.build == 'tool']))),
                 make.MakeRule('image', body=[
-                              '(cd initrd; tar -czf ../fakixinit.rd *)',
+                              '(cd initrd; tar -cvf ../fakixrd *)',
                               f'dd if=/dev/zero of=fakix_{arch}_image bs=1M count=16',
                               f'mkfs.fat fakix_{arch}_image',
-                              f'mcopy -i fakix_{arch}_image -s {source_root}/firmware/{root.firmware}/* ::']),
+                              f'mcopy -i fakix_{arch}_image -s {source_root}/firmware/{root.firmware}/* ::',
+                              f'mcopy -i fakix_{arch}_image fakixrd ::/fakixrd']),
                 make.MakeRule('clean', body=['rm -rf build/target/* build/obj/* build/generated/*']),
                 make.MakeRule('qemu', body=[f'{Architecture(arch).qemu} '
                                             f'-drive format=raw,file=fakix_{arch}_image -nographic'])]

@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         {"image", required_argument, NULL, 'i'},
         {NULL, 0, 0, 0}
     };
-    
+
     while (true) {
         opt = getopt_long(argc, argv, "vi:", longopts, NULL);
         switch (opt) {
