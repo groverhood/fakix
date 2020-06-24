@@ -228,11 +228,11 @@ struct mmio_rpi4b_gpio_pup_pdn_cntrl_reg3 {
 
 struct mmio_rpi4b_gpio {
     struct mmio_rpi4b_gpio_gpfsel0 gpfsel0;
-    struct mmio_rpi4b_gpio_gpfsel0 gpfsel1;
-    struct mmio_rpi4b_gpio_gpfsel0 gpfsel2;
-    struct mmio_rpi4b_gpio_gpfsel0 gpfsel3;
-    struct mmio_rpi4b_gpio_gpfsel0 gpfsel4;
-    struct mmio_rpi4b_gpio_gpfsel0 gpfsel5;
+    struct mmio_rpi4b_gpio_gpfsel1 gpfsel1;
+    struct mmio_rpi4b_gpio_gpfsel2 gpfsel2;
+    struct mmio_rpi4b_gpio_gpfsel3 gpfsel3;
+    struct mmio_rpi4b_gpio_gpfsel4 gpfsel4;
+    struct mmio_rpi4b_gpio_gpfsel5 gpfsel5;
 
     struct mmio_rpi4b_gpio_gpset  gpset;
     struct mmio_rpi4b_gpio_gpclr  gpclr;
