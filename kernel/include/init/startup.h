@@ -34,11 +34,14 @@ struct bootstruct {
     uint64_t ramdisk_size;
     uint8_t *ramdisk;
     uint64_t memmap_size;
+    uint64_t memmap_entsz;
     struct efi_memory_descriptor memmap[0];
 };
 
 /* Bootboot entry point */
 void local_start(struct bootstruct *boot);
+
+struct bootinfo;
 
 /* Brief C bootstrapping function. */
 void start(struct bootinfo *bi);
