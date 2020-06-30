@@ -29,7 +29,7 @@ class Architecture(object):
 
     def __init__(self, arch_type: str):
         prefix = {
-            'x86_64': 'x86_64-linux-gnu-',
+            'x86_64': 'x86_64-pc-linux-gnu-',
             'aarch64': 'aarch64-linux-gnu-',
             'self': ''
         }[arch_type]

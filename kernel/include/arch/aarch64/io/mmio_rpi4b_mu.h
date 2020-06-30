@@ -6,7 +6,7 @@
 
 /* Auxiliary registers (UART1M SPI1 & SPI2). */
 
-#define MMIO_RPI4B_AUX_BASE 0x7e215000
+#define MMIO_RPI4B_AUX_BASE (MMIO_RPI4B_PERIPHERAL_BASE + 0x215000)
 #define MMIO_RPI4B_AUX_IRQ 0x00
 #define MMIO_RPI4B_AUX_ENABLES 0x04
 #define MMIO_RPI4B_AUX_MU_IO_REG 0x40
@@ -54,9 +54,9 @@
 #include <attributes.h>
 
 enum mmio_rpi4b_aux_dev {
-    MMIO_RPI4_AUX_DEV_MINI_UART,
-    MMIO_RPI4_AUX_DEV_SPI1,
-    MMIO_RPI4_AUX_DEV_SPI2
+    MMIO_RPI4B_AUX_DEV_MINI_UART,
+    MMIO_RPI4B_AUX_DEV_SPI1,
+    MMIO_RPI4B_AUX_DEV_SPI2
 };
 
 static inline bool mmio_rpi4b_aux_irq_pending(paddr_t aux_base, enum mmio_rpi4b_aux_dev dev)

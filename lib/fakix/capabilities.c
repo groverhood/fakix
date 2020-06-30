@@ -2,7 +2,6 @@
 #include <fakix/capabilities.h>
 #include <fakix/tcb.h>
 #include <fakix/addr.h>
-#include <bootboot/bootboot.h>
 
 #define SIZEOF_CAP 32
 

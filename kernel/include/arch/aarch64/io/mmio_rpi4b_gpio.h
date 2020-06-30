@@ -6,7 +6,7 @@
 #include <attributes.h>
 #include <io/mmio_rpi4b_peripherals.h>
 
-#define MMIO_RPI4B_GPIO_BASE (0x7e215000 - MMIO_RPI4B_LEGACY_PERIPHERAL_BASE)
+#define MMIO_RPI4B_GPIO_BASE (MMIO_RPI4B_PERIPHERAL_BASE + 0x200000)
 
 #ifndef ASM_FILE
 

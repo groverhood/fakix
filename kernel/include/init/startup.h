@@ -6,6 +6,7 @@
 
 #define KAIJIMAG *(uint64_t *)((char [8]){ 'K', 'a', 'i', 'j', 'i', 'E', 'F', 'I' })
 
+/* Attributes */
 #define EFI_MEMORY_UC            0x0000000000000001
 #define EFI_MEMORY_WC            0x0000000000000002
 #define EFI_MEMORY_WT            0x0000000000000004
@@ -20,6 +21,23 @@
 #define EFI_MEMORY_SP            0x0000000000040000
 #define EFI_MEMORY_CPU_CRYPTO    0x0000000000080000
 #define EFI_MEMORY_RUNTIME       0x8000000000000000
+
+/* Types */
+enum {
+    EfiReservedMemoryType,
+    EfiLoaderCode,
+    EfiLoaderData,
+    EfiBootServicesCode,
+    EfiBootServicesData,
+    EfiRuntimeServicesCode,
+    EfiRuntimeServicesData,
+    EfiConventionalMemory,
+    EfiUnusableMemory,
+    EfiACPIReclaimMemory,
+    EfiACPIMemoryNVS,
+    EfiMemoryMappedIO,
+    EfiMemoryMappedIOPortSpace
+};
 
 struct efi_memory_descriptor {
     uint32_t type;

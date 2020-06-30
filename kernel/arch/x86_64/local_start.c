@@ -2,47 +2,37 @@
 #include <elf/elf.h>
 #include <cap/caps.h>
 #include <sys/core.h>
+#include <log/print.h>
 #include <sys/syscall.h>
 #include <init/startup.h>
 #include <fakix/syscall.h>
 #include <sys/task_manager.h>
-#include <bootboot/bootboot.h>
 #include <fakix/capabilities.h>
 #include <fakix/init/bootinfo.h>
+
+#define SPIN() do { asm (""); } while (1)
+
+char print_buffer[VSPACE_BASE_PAGE_SIZE];
 
 /* Setup the system calls required by a user process running on x64. */
 static errval_t enable_syscalls(void);
 
-extern BOOTBOOT bootboot;
-
-void _start(void)
+void local_start(struct bootstruct *bootinfo)
 {
-    if (sys_core_id() != 0) {
-        while (1);
-    }
-
-    struct bootinfo bi;
+    static struct bootinfo bi;
     struct bootinfo_arch *arch = &bi.arch;
 
-    enable_syscalls();
+    if (serial_init() != ERR_OK) {
+        goto spin;
+    }
 
-    start(&bi);
-}
+    if (enable_syscalls() != ERR_OK) {
+        KERNEL_MSG("Can't enable syscalls, spinning");
+        goto spin;
+    }
 
-errval_t task_init(Elf64_Ehdr *hdr, struct task_manager *tm, struct capability *(*alloc_fn)(void))
-{
-    
-
-    tcb_handle_t handle = tm->tcb;
-    struct tcb_generic_shared *tcb = tcb_get_generic_shared(handle);
-    union registers *disabled_area = &tcb->disabled_save_area;
-
-    disabled_area->named.rdi = handle;
-    tcb->pc = hdr->e_entry;
-    tcb->disabled = true;
-
-    struct capability *vroot = alloc_fn();
-    caps_write_cap(tm->root, CAP_PAGE_VTL1, )
+spin:
+    SPIN();
 }
 
 static errval_t enable_syscalls(void)

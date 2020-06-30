@@ -7,6 +7,11 @@
 #define LSR_TRANSMITTER_EMPTY_BIT (1 << 6)
 #define LSR_DATA_AVAILABLE_BIT (1 << 0)
 
+errval_t serial_init(void)
+{
+    return ERR_OK;
+}
+
 static void transmitter_spin(portid_t port)
 {
     uint8_t b;
